@@ -1,0 +1,190 @@
+import Link from "next/link"
+import { dataStore } from "@/lib/store"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Plus, Play, Pause, Square, Radio, MapPin } from "lucide-react"
+
+export default function TasksPage() {
+  const tasks = dataStore.getTasks()
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Tasks</h1>
+          <p className="text-muted-foreground">Manage monitoring tasks and view their status</p>
+        </div>
+        <Link href="/tasks/new">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            New Task
+          </Button>
+        </Link>
+      </div>
+
+      <div className="grid gap-4">
+        {tasks.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <p className="text-muted-foreground mb-4">No tasks yet. Create your first monitoring task.</p>
+              <Link href="/tasks/new">
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Task
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        ) : (
+          tasks.map((task) => {
+            const streams = task.boundStreamIds.map((id) => dataStore.getStream(id)).filter(Boolean)
+            const groups = task.notifyGroupIds.map((id) => dataStore.getGroup(id)).filter(Boolean)
+            const historyStreams = (task.historyStreams ?? [])
+              .map((h) => ({ ...h, stream: dataStore.getStream(h.streamId) }))
+              .filter((h) => h.stream)
+
+            return (
+              <Card key={task.id} className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <CardTitle className="text-xl">{task.name}</CardTitle>
+                        <Badge
+                          variant={
+                            task.status === "running"
+                              ? "default"
+                              : task.status === "ended"
+                                ? "secondary"
+                                : task.status === "paused"
+                                  ? "outline"
+                                  : "secondary"
+                          }
+                        >
+                          {task.status === "running" && <Play className="mr-1 h-3 w-3" />}
+                          {task.status === "paused" && <Pause className="mr-1 h-3 w-3" />}
+                          {task.status === "ended" && <Square className="mr-1 h-3 w-3" />}
+                          {task.status}
+                        </Badge>
+                      </div>
+                      {task.description && <CardDescription className="text-sm">{task.description}</CardDescription>}
+                    </div>
+                    <Link href={`/tasks/${task.id}`}>
+                      <Button variant="outline" size="sm">
+                        View Details
+                      </Button>
+                    </Link>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Time Info */}
+                  <div className="flex flex-wrap gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Created: </span>
+                      <span className="font-medium">{new Date(task.createdAt).toLocaleString()}</span>
+                    </div>
+                    {task.startAt && (
+                      <div>
+                        <span className="text-muted-foreground">Started: </span>
+                        <span className="font-medium">{new Date(task.startAt).toLocaleString()}</span>
+                      </div>
+                    )}
+                    {task.endAt && (
+                      <div>
+                        <span className="text-muted-foreground">Ended: </span>
+                        <span className="font-medium">{new Date(task.endAt).toLocaleString()}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Telemetry */}
+                  {task.currentTelemetry && (task.currentTelemetry.lat || task.currentTelemetry.lng) && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Current Location:</span>
+                      <span className="font-mono">
+                        {task.currentTelemetry.lat?.toFixed(4)}, {task.currentTelemetry.lng?.toFixed(4)}
+                        {task.currentTelemetry.altitude && ` @ ${task.currentTelemetry.altitude}m`}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Streams */}
+                  <div>
+                    <p className="text-sm font-medium mb-2 text-muted-foreground">Bound Streams ({streams.length})</p>
+                    <div className="flex flex-wrap gap-2">
+                      {streams.map((stream) => (
+                        <Link key={stream.id} href={`/streams/${stream.id}`}>
+                          <Badge variant="outline" className="cursor-pointer hover:bg-accent">
+                            <Radio className="mr-1 h-3 w-3" />
+                            {stream.name}
+                          </Badge>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* History Streams */}
+                  {historyStreams.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium mb-2 text-muted-foreground">
+                        Historical Streams ({historyStreams.length})
+                      </p>
+                      <div className="space-y-1 text-xs text-muted-foreground">
+                        {historyStreams.map((item) => (
+                          <div key={`${item.streamId}-${item.startAt ?? ""}-${item.endAt ?? ""}`} className="flex gap-2 items-center">
+                            <Radio className="h-3 w-3" />
+                            <span className="font-medium text-foreground">{item.stream?.name}</span>
+                            <span>
+                              {item.startAt ? new Date(item.startAt).toLocaleString() : "Unknown start"}{" "}
+                              {item.endAt ? `- ${new Date(item.endAt).toLocaleString()}` : "(active)"}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Alert Metrics */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Alerts</p>
+                      <p className="text-2xl font-bold text-primary">{task.metrics.alertCountTotal}</p>
+                    </div>
+                    {Object.entries(task.metrics.alertCountByType)
+                      .slice(0, 3)
+                      .map(([type, count]) => (
+                        <div key={type}>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                            {type.replace(/_/g, " ")}
+                          </p>
+                          <p className="text-2xl font-bold">{count}</p>
+                        </div>
+                      ))}
+                  </div>
+
+                  {/* Notification Groups */}
+                  {groups.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium mb-2 text-muted-foreground">
+                        Notification Groups ({groups.length})
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {groups.map((group) => (
+                          <Badge key={group.id} variant="secondary">
+                            {group.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )
+          })
+        )}
+      </div>
+    </div>
+  )
+}

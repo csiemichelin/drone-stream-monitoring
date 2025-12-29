@@ -1,0 +1,9 @@
+export default function Footer() {
+  return (
+    <footer className="w-full border-t bg-sky-600 opacity-80">
+      <div className="mx-auto flex h-8 items-center justify-center text-xs text-white">
+        Copyright © 2026 All Rights Reserved ITRI. 
+      </div>
+    </footer>
+  )
+}
