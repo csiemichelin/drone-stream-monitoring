@@ -94,93 +94,79 @@ export default function StreamDetailPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col">
-      {/* Header */}
-      <div className="border-b bg-card p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-2xl font-bold">{stream.name}</h1>
+    <div className="flex-1 flex flex-col lg:flex-row">
+      {/* Left Sidebar - Stream Info (desktop only) */}
+      <div className="hidden lg:block lg:w-64 lg:border-r bg-card p-4">
+        <Card className="mb-4">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Stream Info</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">Source Type</p>
+              <Badge variant="outline" className="mt-1">
+                {stream.sourceType.toUpperCase()}
+              </Badge>
             </div>
-          </div>
-        </div>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">Status</p>
+              <Badge
+                variant={
+                  stream.status === "online" ? "default" : stream.status === "degraded" ? "outline" : "secondary"
+                }
+                className="mt-1"
+              >
+                {stream.status}
+              </Badge>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">Tags</p>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {stream.tags.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Statistics</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">FPS</span>
+              <span className="font-medium">{stream.stats.fps || 0}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Latency</span>
+              <span className="font-medium">{stream.stats.latencyMs || 0} ms</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Bitrate</span>
+              <span className="font-medium">{stream.stats.bitrateKbps || 0} kbps</span>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Main Content - Three Column Layout */}
-      <div className="flex-1 flex flex-col lg:flex-row">
-        {/* Left Sidebar - Stream Info */}
-        <div className="w-full lg:w-64 border-b lg:border-b-0 lg:border-r bg-card p-4">
-          <Card className="mb-4">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Stream Info</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Source Type</p>
-                <Badge variant="outline" className="mt-1">
-                  {stream.sourceType.toUpperCase()}
-                </Badge>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Status</p>
-                <Badge
-                  variant={
-                    stream.status === "online" ? "default" : stream.status === "degraded" ? "outline" : "secondary"
-                  }
-                  className="mt-1"
-                >
-                  {stream.status}
-                </Badge>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Tags</p>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {stream.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Center - Video Player (mobile first) */}
+      <div className="order-1 w-full lg:order-2 lg:flex-1 p-4 lg:p-6">
+        <StreamPlayer stream={stream} onCapture={handleCapture} />
+      </div>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Statistics</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">FPS</span>
-                <span className="font-medium">{stream.stats.fps || 0}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Latency</span>
-                <span className="font-medium">{stream.stats.latencyMs || 0} ms</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Bitrate</span>
-                <span className="font-medium">{stream.stats.bitrateKbps || 0} kbps</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Center - Video Player */}
-        <div className="w-full lg:flex-1 p-4 lg:p-6">
-          <StreamPlayer stream={stream} onCapture={handleCapture} />
-        </div>
-
-        {/* Right Sidebar - Inspector */}
-        <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l bg-card">
-          <div className="p-4 lg:h-full">
-            <InspectorPanel
-              alerts={alerts}
-              latestAnalysis={latestAnalysis}
-              onAck={handleAck}
-              onResolve={handleResolve}
-            />
-          </div>
+      {/* Right Sidebar - Inspector (after video on mobile) */}
+      <div className="order-2 w-full lg:order-3 lg:w-96 lg:border-l bg-card">
+        <div className="p-4 lg:h-full">
+          <InspectorPanel
+            alerts={alerts}
+            latestAnalysis={latestAnalysis}
+            onAck={handleAck}
+            onResolve={handleResolve}
+          />
         </div>
       </div>
     </div>
