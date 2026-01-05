@@ -29,7 +29,7 @@ import {
 import type { Alert } from "@/lib/types"
 
 const navItems = [
-  { name: "Overview", href: "/", icon: LayoutDashboard },
+  { name: "總覽", href: "/", icon: LayoutDashboard },
   { name: "Tasks", href: "/tasks", icon: ListTodo },
   { name: "Streams", href: "/streams", icon: Radio },
   { name: "Alerts", href: "/alerts", icon: Bell },
