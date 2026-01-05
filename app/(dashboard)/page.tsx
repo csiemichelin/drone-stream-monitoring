@@ -59,7 +59,7 @@ export default function OverviewPage() {
   const partialBtnVariant = showPartiallyBlocked ? "default" : "outline"
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-screen p-6 flex flex-col gap-6">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
@@ -107,7 +107,7 @@ export default function OverviewPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 flex-1 min-h-0">
         {/* Left column */}
         <div className="lg:col-span-1 flex flex-col space-y-4">
           <Card className="flex-1">
@@ -199,7 +199,7 @@ export default function OverviewPage() {
 
         {/* Right column */}
         <div className="lg:col-span-4">
-          <Card className="h-full">
+          <Card className="h-full flex flex-col">
             <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
               <div>
                 <CardTitle className="text-lg">Taiwan Command Map · Tai-8 Focus</CardTitle>
@@ -222,11 +222,11 @@ export default function OverviewPage() {
               </div>
             </CardHeader>
 
-            <CardContent className="h-[520px] md:h-[580px] lg:h-[640px] relative overflow-hidden">
+            <CardContent className="flex-1 min-h-0 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-sky-100 via-white to-slate-100" />
 
               <div className="absolute inset-4 rounded-lg border bg-white/80 backdrop-blur-sm shadow-sm overflow-hidden">
-                <div className="grid grid-cols-1 md:grid-cols-4 h-full">
+                <div className="grid grid-cols-1 md:grid-cols-6 h-full">
                   {/* Filters panel */}
                   <div className="p-4 border-b md:border-b-0 md:border-r bg-white/90 space-y-3">
                     <p className="text-xs font-semibold text-muted-foreground">Filters</p>
@@ -271,7 +271,7 @@ export default function OverviewPage() {
                   </div>
 
                   {/* Map panel */}
-                  <div className="md:col-span-3 relative">
+                  <div className="md:col-span-5 relative">
                     <Tai8D3SvgMap
                       showFullyBlocked={showFullyBlocked}
                       showPartiallyBlocked={showPartiallyBlocked}
