@@ -54,9 +54,15 @@ export default function OverviewPage() {
   const [showWeather, setShowWeather] = useState(true)
   const [zoomInSignal, setZoomInSignal] = useState(0)
   const [zoomOutSignal, setZoomOutSignal] = useState(0)
+  const [mapMode, setMapMode] = useState<"topo" | "osm" | "county">("topo")
 
   const fullyBtnVariant = showFullyBlocked ? "default" : "outline"
   const partialBtnVariant = showPartiallyBlocked ? "default" : "outline"
+  const mapModeLabel = useMemo(() => {
+    if (mapMode === "topo") return "⛰️ 地形圖(OpenTopoMap)"
+    if (mapMode === "osm") return "🗺️ 標準地圖(OSM)"
+    return "⬜ 灰白縣市底圖(GeoJSON)"
+  }, [mapMode])
 
   return (
     <div className="min-h-screen p-6 flex flex-col gap-6">
@@ -257,18 +263,34 @@ export default function OverviewPage() {
                       </label>
                     </div>
 
-                    <div className="pt-2 text-[11px] text-muted-foreground space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-destructive" /> Landslide / Closed
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-amber-500" /> Partial
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" /> Clear
-                      </div>
+                  <div className="pt-2 text-[11px] text-muted-foreground space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-destructive" /> Landslide / Closed
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-amber-500" /> Partial
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" /> Clear
                     </div>
                   </div>
+
+                  <div className="pt-3 mt-2 border-t border-slate-200/70 space-y-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setMapMode((mode) => (mode === "topo" ? "osm" : mode === "osm" ? "county" : "topo"))
+                      }
+                      className="w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-xs font-medium shadow-lg transition-colors hover:bg-slate-50"
+                    >
+                      🔁 切換底圖（地形 → 標準 → 灰白）
+                    </button>
+
+                    <div className="rounded-md border bg-white/90 px-3 py-2 text-[11px] text-slate-700 shadow">
+                      目前：{mapModeLabel}
+                    </div>
+                  </div>
+                </div>
 
                   {/* Map panel */}
                   <div className="md:col-span-5 relative">
@@ -279,6 +301,7 @@ export default function OverviewPage() {
                       showWeather={showWeather}
                       zoomInSignal={zoomInSignal}
                       zoomOutSignal={zoomOutSignal}
+                      mapMode={mapMode}
                     />
                   </div>
                 </div>

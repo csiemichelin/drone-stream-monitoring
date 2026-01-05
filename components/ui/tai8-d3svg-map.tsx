@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 
 type SegmentStatus = "fully_blocked" | "partially_blocked" | "clear"
 
@@ -14,11 +14,14 @@ type SegmentProps = {
 }
 
 type SegmentFeature = GeoJSON.Feature<GeoJSON.LineString, SegmentProps>
+type GeoJSONLike = GeoJSON.FeatureCollection | GeoJSON.Feature
 
 const SEGMENT_STATUS: Record<string, SegmentStatus> = {
   // 可在此定義特定路段的狀態，例如：
   // "w041-w042": "fully_blocked",
 }
+
+type BaseMode = "topo" | "osm" | "county" // ✅ 新增 county：用 twCounty2010merge 當灰白底圖
 
 function segmentKey(p: SegmentProps): string {
   const a = p.from_id ? String(p.from_id).trim() : ""
@@ -61,7 +64,7 @@ async function fetchTai8Subsegments(): Promise<SegmentFeature[]> {
           type: "LineString",
           coordinates: [
             [121.28, 24.15],
-            [121.30, 24.17],
+            [121.3, 24.17],
             [121.32, 24.19],
           ],
         },
@@ -86,12 +89,24 @@ async function fetchTai8Subsegments(): Promise<SegmentFeature[]> {
           coordinates: [
             [121.36, 24.23],
             [121.38, 24.25],
-            [121.40, 24.27],
+            [121.4, 24.27],
           ],
         },
         properties: { from_name: "洛韶", to_name: "慈恩", status: "fully_blocked", info: "落石封閉" },
       },
     ] as SegmentFeature[]
+  }
+}
+
+async function fetchTaiwanCounties(): Promise<GeoJSONLike | null> {
+  try {
+    const res = await fetch("/geo/twCounty2010merge.geo.json", { cache: "no-store" })
+    if (!res.ok) throw new Error(`Failed to load /geo/twCounty2010merge.geo.json: ${res.status}`)
+    const json = (await res.json()) as GeoJSONLike
+    return json
+  } catch (e) {
+    console.warn("無法載入 /geo/twCounty2010merge.geo.json", e)
+    return null
   }
 }
 
@@ -105,6 +120,7 @@ export default function Tai8LeafletMap({
   showWeather,
   zoomInSignal,
   zoomOutSignal,
+  mapMode,
 }: {
   showFullyBlocked: boolean
   showPartiallyBlocked: boolean
@@ -112,8 +128,8 @@ export default function Tai8LeafletMap({
   showWeather: boolean
   zoomInSignal: number
   zoomOutSignal: number
+  mapMode?: BaseMode
 }) {
-  // 目前 showFullyBlocked/showPartiallyBlocked/showCctv/showWeather 未接進圖層過濾（保留介面）
   void showFullyBlocked
   void showPartiallyBlocked
   void showCctv
@@ -123,10 +139,10 @@ export default function Tai8LeafletMap({
   const leafletMapRef = useRef<LeafletMap | null>(null)
   const leafletNSRef = useRef<LeafletNS | null>(null)
   const polylineLayersRef = useRef<any[]>([])
+  const countyLayerRef = useRef<any>(null) // ✅ 縣市灰白圖層
   const injectedRef = useRef(false)
 
   const [mapReady, setMapReady] = useState(false)
-  const [useTopoMap, setUseTopoMap] = useState(true)
   const [segments, setSegments] = useState<SegmentFeature[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedSegment, setSelectedSegment] = useState<{
@@ -134,6 +150,11 @@ export default function Tai8LeafletMap({
     status: SegmentStatus
     info?: string
   } | null>(null)
+  const mode = mapMode ?? "topo"
+
+  // 縣市底圖資料
+  const [taiwanGeo, setTaiwanGeo] = useState<GeoJSONLike | null>(null)
+  const [geoLoading, setGeoLoading] = useState(true)
 
   // 1) 載入路段資料
   useEffect(() => {
@@ -155,7 +176,24 @@ export default function Tai8LeafletMap({
     }
   }, [])
 
-  // 2) 初始化 Leaflet（確保 mapReady 正確）
+  // 1.5) 載入縣市灰白底圖 GeoJSON
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        setGeoLoading(true)
+        const geo = await fetchTaiwanCounties()
+        if (!cancelled) setTaiwanGeo(geo)
+      } finally {
+        if (!cancelled) setGeoLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // 2) 初始化 Leaflet
   useEffect(() => {
     if (!mapRef.current) return
     if (leafletMapRef.current) return
@@ -219,13 +257,12 @@ export default function Tai8LeafletMap({
           attribution: "© OpenStreetMap",
         })
 
+        // 預設模式：地形
         topoLayer.addTo(map)
 
         ;(map as any)._topoLayer = topoLayer
         ;(map as any)._osmLayer = osmLayer
-        ;(map as any)._currentLayer = "topo"
 
-        setUseTopoMap(true)
         setMapReady(true)
       } catch (e) {
         console.error(e)
@@ -242,7 +279,76 @@ export default function Tai8LeafletMap({
     }
   }, [])
 
-  // 3) 畫路段（關鍵：依賴 mapReady，避免 segments 先到、map 後到而錯過）
+  // ✅ 3) 建立/更新 county 灰白底圖 Layer（GeoJSON -> L.geoJSON）
+  useEffect(() => {
+    const map = leafletMapRef.current
+    const L = leafletNSRef.current
+    if (!mapReady || !map || !L) return
+    if (!taiwanGeo) return
+
+    // 如果已存在，先移除再重建（避免重複疊）
+    if (countyLayerRef.current) {
+      try {
+        map.removeLayer(countyLayerRef.current)
+      } catch {}
+      countyLayerRef.current = null
+    }
+
+    const geo = taiwanGeo as any
+    const layer = L.geoJSON(geo, {
+      style: () => ({
+        color: "#94a3b8",
+        weight: 1,
+        opacity: 1,
+        fillColor: "#bdbdbd",
+        fillOpacity: 0.85,
+      }),
+      interactive: false,
+    })
+
+    countyLayerRef.current = layer
+
+    // 如果目前模式是 county，就加上去
+    if (mode === "county") {
+      layer.addTo(map)
+    }
+
+    // 清掉一次 fit 旗標，讓第一次有路段時能 fit（可選）
+    // injectedRef.current = false
+  }, [taiwanGeo, mapReady]) // mode 另外在切換 effect 控制 add/remove
+
+  // ✅ 4) 模式切換：topo / osm / county
+  const applyMode = (next: BaseMode) => {
+    const map = leafletMapRef.current
+    const L = leafletNSRef.current
+    if (!map || !L) return
+
+    const topoLayer = (map as any)._topoLayer
+    const osmLayer = (map as any)._osmLayer
+    const countyLayer = countyLayerRef.current
+
+    // 先全部移除（存在才移除）
+    if (topoLayer && map.hasLayer(topoLayer)) map.removeLayer(topoLayer)
+    if (osmLayer && map.hasLayer(osmLayer)) map.removeLayer(osmLayer)
+    if (countyLayer && map.hasLayer(countyLayer)) map.removeLayer(countyLayer)
+
+    // 再加上目標模式
+    if (next === "topo") {
+      topoLayer?.addTo(map)
+    } else if (next === "osm") {
+      osmLayer?.addTo(map)
+    } else if (next === "county") {
+      // county 模式不需要瓦片，只要 GeoJSON 灰白
+      if (countyLayer) countyLayer.addTo(map)
+    }
+
+  }
+  useEffect(() => {
+    if (!mapReady) return
+    applyMode(mode)
+  }, [mode, mapReady])
+
+  // ✅ 5) 畫路段
   useEffect(() => {
     const map = leafletMapRef.current
     const L = leafletNSRef.current
@@ -258,7 +364,6 @@ export default function Tai8LeafletMap({
 
     if (!segments || segments.length === 0) return
 
-    // 依資料範圍自動調整視角（避免「其實畫了但不在視窗內」）
     const bounds = L.latLngBounds([])
 
     segments.forEach((segment) => {
@@ -270,7 +375,6 @@ export default function Tai8LeafletMap({
       const status: SegmentStatus = props.status || SEGMENT_STATUS[key] || "clear"
       const color = colorByStatus(status)
 
-      // 白色邊框
       const border = L.polyline(coords, {
         color: "white",
         weight: 6,
@@ -279,7 +383,6 @@ export default function Tai8LeafletMap({
         lineCap: "round",
       }).addTo(map)
 
-      // 主線條
       const line = L.polyline(coords, {
         color,
         weight: 4,
@@ -299,37 +402,13 @@ export default function Tai8LeafletMap({
       line.on("mouseout", () => line.setStyle({ weight: 4 }))
     })
 
-    // 只在首次成功畫出路線時自動 fit（避免每次狀態變更都跳畫面）
     if (!injectedRef.current && bounds.isValid()) {
       injectedRef.current = true
       map.fitBounds(bounds.pad(0.15))
     }
   }, [segments, mapReady])
 
-  // 4) 切換圖層
-  const toggleLayer = () => {
-    const map = leafletMapRef.current
-    const L = leafletNSRef.current
-    if (!map || !L) return
-
-    const currentLayer = (map as any)._currentLayer
-    const topoLayer = (map as any)._topoLayer
-    const osmLayer = (map as any)._osmLayer
-
-    if (currentLayer === "topo") {
-      map.removeLayer(topoLayer)
-      osmLayer.addTo(map)
-      ;(map as any)._currentLayer = "osm"
-      setUseTopoMap(false)
-    } else {
-      map.removeLayer(osmLayer)
-      topoLayer.addTo(map)
-      ;(map as any)._currentLayer = "topo"
-      setUseTopoMap(true)
-    }
-  }
-
-  // 5) 外部縮放控制
+  // 6) 外部縮放控制
   useEffect(() => {
     const map = leafletMapRef.current
     if (!map || zoomInSignal <= 0) return
@@ -342,27 +421,25 @@ export default function Tai8LeafletMap({
     map.zoomOut()
   }, [zoomOutSignal])
 
+  const modeLabel = useMemo(() => {
+    if (mode === "topo") return "⛰️ 地形圖(OpenTopoMap)"
+    if (mode === "osm") return "🗺️ 標準地圖(OSM)"
+    return "⬜ 灰白縣市底圖(GeoJSON)"
+  }, [mode])
+
   return (
     <div className="absolute inset-0">
       {/* Leaflet 地圖容器 */}
       <div ref={mapRef} className="absolute inset-0 z-[100]" />
 
-      {/* 圖層切換按鈕 */}
-      <div className="absolute left-3 top-3 z-[500] flex flex-col gap-2">
-        <button
-          type="button"
-          onClick={toggleLayer}
-          className="rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-xs font-medium shadow-lg transition-colors hover:bg-slate-50"
-        >
-          {useTopoMap ? "🗺️ 切換到標準地圖" : "⛰️ 切換到地形圖"}
-        </button>
-      </div>
-
       {/* 右上角狀態 */}
       <div className="absolute right-3 top-3 z-[500] rounded-md border-2 border-slate-300 bg-white/95 px-3 py-2 text-xs shadow-lg">
-        <div className="font-medium text-slate-700">{useTopoMap ? "⛰️ 地形圖模式" : "🗺️ 標準地圖模式"}</div>
+        <div className="font-medium text-slate-700">{modeLabel}</div>
         <div className="mt-1 font-medium text-slate-700">
           {loading ? "🔄 載入台八線子路段中..." : `✓ 台八線子路段已載入 (${segments.length} 段)`}
+        </div>
+        <div className="mt-1 font-medium text-slate-700">
+          {geoLoading ? "🗺️ 載入縣市灰白底圖中..." : taiwanGeo ? "✓ 縣市灰白底圖已載入" : "⚠️ 縣市灰白底圖未載入"}
         </div>
         <div className="mt-2 text-[10px] text-slate-500">💡 點擊路段查看詳情</div>
       </div>
