@@ -140,6 +140,7 @@ export default function Tai8LeafletMap({
   const leafletNSRef = useRef<LeafletNS | null>(null)
   const polylineLayersRef = useRef<any[]>([])
   const countyLayerRef = useRef<any>(null) // ✅ 縣市灰白圖層
+  const countyLabelLayerRef = useRef<any>(null) // ✅ 縣市名稱標籤
   const injectedRef = useRef(false)
 
   const [mapReady, setMapReady] = useState(false)
@@ -250,6 +251,10 @@ export default function Tai8LeafletMap({
           const countyPane = map.createPane("countyPane")
           countyPane.style.zIndex = "200"
         }
+        if (!map.getPane("countyLabelPane")) {
+          const labelPane = map.createPane("countyLabelPane")
+          labelPane.style.zIndex = "350"
+        }
 
         leafletMapRef.current = map
 
@@ -263,7 +268,7 @@ export default function Tai8LeafletMap({
           attribution: "© OpenStreetMap",
         })
 
-        // 預設模式：地形
+        // 預設模式：灰白
         topoLayer.addTo(map)
 
         ;(map as any)._topoLayer = topoLayer
@@ -299,6 +304,12 @@ export default function Tai8LeafletMap({
       } catch {}
       countyLayerRef.current = null
     }
+    if (countyLabelLayerRef.current) {
+      try {
+        map.removeLayer(countyLabelLayerRef.current)
+      } catch {}
+      countyLabelLayerRef.current = null
+    }
 
     const geo = taiwanGeo as any
     const layer = L.geoJSON(geo, {
@@ -315,9 +326,32 @@ export default function Tai8LeafletMap({
 
     countyLayerRef.current = layer
 
+    const labelLayer = L.layerGroup()
+    L.geoJSON(geo, {
+      onEachFeature: (feature: any, featureLayer: any) => {
+        const name = feature?.properties?.COUNTYNAME
+        if (!name) return
+        const bounds = featureLayer.getBounds?.()
+        if (!bounds) return
+        const center = bounds.getCenter()
+        const marker = L.marker(center, {
+          interactive: false,
+          pane: "countyLabelPane",
+          icon: L.divIcon({
+            className: "county-label",
+            html: `<div>${name}</div>`,
+          }),
+        })
+        labelLayer.addLayer(marker)
+      },
+    })
+
+    countyLabelLayerRef.current = labelLayer
+
     // 如果目前模式是 county，就加上去
     if (mode === "county") {
       layer.addTo(map)
+      labelLayer.addTo(map)
     }
 
     // 清掉一次 fit 旗標，讓第一次有路段時能 fit（可選）
@@ -333,11 +367,13 @@ export default function Tai8LeafletMap({
     const topoLayer = (map as any)._topoLayer
     const osmLayer = (map as any)._osmLayer
     const countyLayer = countyLayerRef.current
+    const countyLabels = countyLabelLayerRef.current
 
     // 先全部移除（存在才移除）
     if (topoLayer && map.hasLayer(topoLayer)) map.removeLayer(topoLayer)
     if (osmLayer && map.hasLayer(osmLayer)) map.removeLayer(osmLayer)
     if (countyLayer && map.hasLayer(countyLayer)) map.removeLayer(countyLayer)
+    if (countyLabels && map.hasLayer(countyLabels)) map.removeLayer(countyLabels)
 
     // 再加上目標模式
     if (next === "topo") {
@@ -347,6 +383,7 @@ export default function Tai8LeafletMap({
     } else if (next === "county") {
       // county 模式不需要瓦片，只要 GeoJSON 灰白
       if (countyLayer) countyLayer.addTo(map)
+      if (countyLabels) countyLabels.addTo(map)
     }
 
     // Ensure route layers stay above county fill.
@@ -515,6 +552,17 @@ export default function Tai8LeafletMap({
       <style jsx>{`
         :global(.leaflet-container) {
           font-family: inherit;
+        }
+        :global(.county-label) {
+          white-space: nowrap;
+          pointer-events: none;
+        }
+        :global(.county-label div) {
+          transform: translate(-50%, -50%);
+          color: #6b7280;
+          font-size: 18px;
+          font-weight: 600;
+          text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
         }
       `}</style>
     </div>
