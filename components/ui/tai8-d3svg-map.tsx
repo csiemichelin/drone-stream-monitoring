@@ -150,7 +150,7 @@ export default function Tai8LeafletMap({
     status: SegmentStatus
     info?: string
   } | null>(null)
-  const mode = mapMode ?? "topo"
+  const mode = mapMode ?? "county"
 
   // 縣市底圖資料
   const [taiwanGeo, setTaiwanGeo] = useState<GeoJSONLike | null>(null)
@@ -245,6 +245,12 @@ export default function Tai8LeafletMap({
           zoomControl: true,
         })
 
+        // Keep county fill below routes when switching modes.
+        if (!map.getPane("countyPane")) {
+          const countyPane = map.createPane("countyPane")
+          countyPane.style.zIndex = "200"
+        }
+
         leafletMapRef.current = map
 
         const topoLayer = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
@@ -296,6 +302,7 @@ export default function Tai8LeafletMap({
 
     const geo = taiwanGeo as any
     const layer = L.geoJSON(geo, {
+      pane: "countyPane",
       style: () => ({
         color: "#94a3b8",
         weight: 1,
@@ -342,6 +349,8 @@ export default function Tai8LeafletMap({
       if (countyLayer) countyLayer.addTo(map)
     }
 
+    // Ensure route layers stay above county fill.
+    polylineLayersRef.current.forEach((layer) => layer?.bringToFront?.())
   }
   useEffect(() => {
     if (!mapReady) return
