@@ -784,13 +784,13 @@ export default function Tai8LeafletMap({
       })
     }
 
-    const popupHtml = (routeLabel: string, detailText: string, singleLine = false) => {
+    const popupHtml = (routeLabel: string, detailText: string, singleLine = false, title = "路段資訊") => {
       const safeRouteLabel = (routeLabel ?? "").trim() || "未命名路段"
       const textClass = singleLine ? "seg-pop__text seg-pop__text--single" : "seg-pop__text"
       const singleLineText = `台八線 · ${safeRouteLabel} 路段 ${detailText}`
       return `
       <div class="seg-pop">
-        <div class="seg-pop__title">路段資訊</div>
+        <div class="seg-pop__title">${title}</div>
 
         <div class="seg-pop__divider"></div>
 
@@ -834,7 +834,7 @@ export default function Tai8LeafletMap({
         if (fullyCount > 0) {
           const [lat, lng] = offsetLatLng(bucket.center.lat, bucket.center.lng, -18, 0)
           const marker = L.marker([lat, lng], { icon: createIcon("fully_blocked", fullyCount) }).addTo(layer)
-          marker.bindPopup(popupHtml(bucket.label, `完全中斷 ${fullyCount} 處`, true), {
+          marker.bindPopup(popupHtml(bucket.label, `完全中斷 ${fullyCount} 處`, true, "路段資訊"), {
             closeButton: true,            // ✅ 右上角 X
             autoClose: true,
             closeOnClick: true,
@@ -846,7 +846,7 @@ export default function Tai8LeafletMap({
         if (partiallyCount > 0) {
           const [lat, lng] = offsetLatLng(bucket.center.lat, bucket.center.lng, 18, 0)
           const marker = L.marker([lat, lng], { icon: createIcon("partially_blocked", partiallyCount) }).addTo(layer)
-          marker.bindPopup(popupHtml(bucket.label, `部分中斷 ${partiallyCount} 處`, true), {
+          marker.bindPopup(popupHtml(bucket.label, `部分中斷 ${partiallyCount} 處`, true, "路段資訊"), {
             closeButton: true,
             autoClose: true,
             closeOnClick: true,
@@ -867,7 +867,7 @@ export default function Tai8LeafletMap({
         const marker = L.marker([p.lat, p.lng], { icon }).addTo(layer)
         const routeLabel = pointSegmentLabels[p.id] ?? "未命名路段"
         const statusText = p.status === "fully_blocked" ? "完全中斷" : "部分中斷"
-        marker.bindPopup(popupHtml(routeLabel, `${p.label}：${statusText}`), {
+        marker.bindPopup(popupHtml(routeLabel, `${p.label}：${statusText}`, false, "中斷點資訊"), {
           closeButton: true,
           autoClose: true,
           closeOnClick: true,
