@@ -40,7 +40,6 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 2. **Review Tasks**: Select tasks from the left queue to view details
 3. **Edit Fields**: Modify detection results in the right panel
 4. **Workflow Actions**: Approve, Reject, or Resolve tasks
-5. **Adjust Threshold**: Use the sensitivity slider to control detection sensitivity
 
 ## Architecture
 

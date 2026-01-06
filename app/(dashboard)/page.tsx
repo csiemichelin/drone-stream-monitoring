@@ -1,6 +1,7 @@
 "use client"
 
 import dynamic from "next/dynamic"
+import Image from "next/image"
 import Link from "next/link"
 import React, { useEffect, useMemo, useState } from "react"
 import { dataStore } from "@/lib/store"
@@ -58,9 +59,9 @@ export default function OverviewPage() {
   const fullyBtnVariant = showFullyBlocked ? "default" : "outline"
   const partialBtnVariant = showPartiallyBlocked ? "default" : "outline"
   const mapModeLabel = useMemo(() => {
-    if (mapMode === "county") return "⬜ 灰白縣市底圖(GeoJSON)"
-    if (mapMode === "osm") return "🗺️ 標準地圖(OSM)"
-    return "⛰️ 空拍圖(OpensatelliteMap)"
+    if (mapMode === "county") return "⬜ 行政區地圖"
+    if (mapMode === "osm") return "🗺️ 標準地圖"
+    return "🛰️ 衛星空拍圖"
   }, [mapMode])
 
   return (
@@ -206,14 +207,24 @@ export default function OverviewPage() {
         <div className="lg:col-span-4">
           <Card className="h-full flex flex-col">
             <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-              <div>
-                <CardTitle className="text-lg">Taiwan Command Map · Tai-8 Focus</CardTitle>
-                <CardDescription>Monitor Provincial Highway 8 segments with filters</CardDescription>
+              <div className="flex items-center gap-3">
+                <Image
+                  src="/icons/tai8_icon.png"
+                  alt="台八線 Icon"
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 rounded-md"
+                  priority
+                />
+                <div>
+                  <CardTitle className="text-lg">台八線 · 中部橫貫公路</CardTitle>
+                  <CardDescription>道路中斷偵測</CardDescription>
+                </div>
               </div>
             </CardHeader>
 
             <CardContent className="flex-1 min-h-0 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-sky-100 via-white to-slate-100" />
+              <div className="absolute inset-0 bg-sky-50" />
 
               <div className="absolute inset-4 rounded-lg border bg-white/80 backdrop-blur-sm shadow-sm overflow-hidden">
                 <div className="grid grid-cols-1 md:grid-cols-6 h-full">
@@ -242,18 +253,6 @@ export default function OverviewPage() {
                         Weather overlay
                       </label>
                     </div>
-
-                  <div className="pt-2 text-[11px] text-muted-foreground space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-destructive" /> Landslide / Closed
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-amber-500" /> Partial
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" /> Clear
-                    </div>
-                  </div>
 
                   <div className="pt-3 mt-2 border-t border-slate-200/70 space-y-2">
                     <button

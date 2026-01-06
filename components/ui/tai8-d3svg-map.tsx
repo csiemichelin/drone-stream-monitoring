@@ -573,9 +573,9 @@ export default function Tai8LeafletMap({
   }, [zoomOutSignal])
 
   const modeLabel = useMemo(() => {
-    if (mode === "satellite") return "🛰️ 衛星空拍圖 (ESRI World Imagery)"
-    if (mode === "osm") return "🗺️ 標準地圖 (OSM)"
-    return "⬜ 灰白縣市底圖 (GeoJSON)"
+    if (mode === "satellite") return "🛰️ 衛星空拍圖"
+    if (mode === "osm") return "🗺️ 標準地圖"
+    return "⬜ 行政區地圖"
   }, [mode])
 
   return (
@@ -589,10 +589,7 @@ export default function Tai8LeafletMap({
         <div className="mt-1 font-medium text-slate-700">
           {loading ? "🔄 載入台八線子路段中..." : `✓ 台八線子路段已載入 (${segments.length} 段)`}
         </div>
-        <div className="mt-1 font-medium text-slate-700">
-          {geoLoading ? "🗺️ 載入縣市灰白底圖中..." : taiwanGeo ? "✓ 縣市灰白底圖已載入" : "⚠️ 縣市灰白底圖未載入"}
-        </div>
-        <div className="mt-2 text-[10px] text-slate-500">💡 點擊路段查看詳情</div>
+        <div className="mt-2 text-[12px] text-slate-500">💡 點擊路段查看詳情</div>
       </div>
 
       {/* 圖例 */}

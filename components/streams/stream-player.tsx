@@ -15,7 +15,6 @@ interface StreamPlayerProps {
 export function StreamPlayer({ stream, onCapture }: StreamPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [playing, setPlaying] = useState(true)
-  const [sensitivity, setSensitivity] = useState(60)
   const [showOverlay, setShowOverlay] = useState(true)
 
   useEffect(() => {
@@ -102,19 +101,7 @@ export function StreamPlayer({ stream, onCapture }: StreamPlayerProps) {
           </Button>
         </div>
 
-        <div className="flex items-center gap-3 flex-1">
-          <span className="text-sm text-muted-foreground whitespace-nowrap">Sensitivity:</span>
-          <Slider
-            value={[sensitivity]}
-            onValueChange={(val) => setSensitivity(val[0])}
-            max={100}
-            step={1}
-            className="flex-1 max-w-xs"
-          />
-          <span className="text-sm font-medium w-12">{sensitivity}%</span>
-        </div>
-
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ml-auto">
           <input
             type="checkbox"
             id="overlay"
