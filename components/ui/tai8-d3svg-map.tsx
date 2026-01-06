@@ -28,54 +28,54 @@ type BlockPoint = {
 
 // ✅ 測試點：完全阻斷 / 部分阻斷（含經緯度）
 const BLOCKAGE_POINTS: BlockPoint[] = [
-  { id: "block_3", lat: 24.24142253349646, lng: 120.83369109693069, status: "partially_blocked", label: "台八線-東勢-天冷路段1.6km=>1.6km處 部分中斷" },
-  { id: "block_2", lat: 24.19641391489506, lng: 120.83896859104198, status: "fully_blocked", label: "台八線-東勢-天冷路段6.7km=>6.7km處 道路中斷" },
-  { id: "block_7", lat: 24.17339895177517, lng: 120.83852149496494, status: "fully_blocked", label: "台八線-東勢-天冷路段9.4km=>9.4km處 道路中斷" },
-  { id: "block_5", lat: 24.16847971328785, lng: 120.84276812819672, status: "partially_blocked", label: "台八線-東勢-天冷路段14.1km=>14.1km處 部分中斷" },
-  { id: "block_6", lat: 24.16543277634449, lng: 121.60416900160862, status: "partially_blocked", label: "台八線-天祥-太魯閣路段173.8km=>173.8km處 道路中斷" },
-  { id: "block_4", lat: 24.160379267144165, lng: 121.6158291888184, status: "fully_blocked", label: "台八線-天祥-太魯閣路段172.5km=>172.5km處 道路中斷" },
-  { id: "block_1", lat: 24.184313927998218, lng: 120.92400483086016, status: "fully_blocked", label: "台八線-東勢-天冷路段21.4km=>21.4km處 道路中斷" },
-  { id: "block_9", lat: 24.200794525815, lng: 121.0014835884196, status: "partially_blocked", label: "台八線-天冷-谷關路段31.1km=>31.1km處 部分中斷" },
-  { id: "block_15", lat: 24.194074784869002, lng: 120.99453869594981, status: "partially_blocked", label: "台八線-天冷-谷關路段31.6km=>31.6km處 部分中斷" },
-  { id: "block_11", lat: 24.197756538540943, lng: 120.99836843335237, status: "fully_blocked", label: "台八線-天冷-谷關路段32.0km=>32.0km處 道路中斷" },
-  { id: "block_14", lat: 24.19501644601175, lng: 120.99595799854484, status: "fully_blocked", label: "台八線-天冷-谷關路段32.5km=>32.5km處 道路中斷" },
-  { id: "block_13", lat: 24.198346271253712, lng: 121.00018070921294, status: "partially_blocked", label: "台八線-天冷-谷關路段32.7km=>32.7km處 部分中斷" },
-  { id: "block_10", lat: 24.20263921503745, lng: 121.00326291780601, status: "partially_blocked", label: "台八線-天冷-谷關路段32.8km=>32.8km處 部分中斷" },
-  { id: "block_8", lat: 24.191875969636513, lng: 120.99251898374712, status: "partially_blocked", label: "台八線-天冷-谷關路段33.3km=>33.3km處 部分中斷" },
-  { id: "block_17", lat: 24.2030591603107, lng: 121.00800422258834, status: "partially_blocked", label: "台八線-谷關-德基路段34.2km=>34.2km處 部分中斷" },
-  { id: "block_16", lat: 24.202299683641257, lng: 121.00927771273314, status: "fully_blocked", label: "台八線-谷關-德基路段34.4km=>34.4km處 道路中斷" },
-  { id: "block_20", lat: 24.20330933965218, lng: 121.0138720762514, status: "partially_blocked", label: "台八線-谷關-德基路段34.9km=>34.9km處 部分中斷" },
-  { id: "block_18", lat: 24.20417602914229, lng: 121.01433249221168, status: "fully_blocked", label: "台八線-谷關-德基路段35.0km=>35.0km處 道路中斷" },
-  { id: "block_19", lat: 24.206776073010175, lng: 121.01305898438568, status: "fully_blocked", label: "台八線-谷關-德基路段35.3km=>35.3km處 道路中斷" },
-  { id: "block_21", lat: 24.207553392326858, lng: 121.0121773367826, status: "fully_blocked", label: "台八線-谷關-德基路段35.4km=>35.4km處 道路中斷" },
-  { id: "block_22", lat: 24.209765730292602, lng: 121.42489699384845, status: "partially_blocked", label: "台八線-關原-天祥路段155.5km=>155.5km處 部分中斷" },
-  { id: "block_23", lat: 24.214490144955022, lng: 121.03704506585763, status: "fully_blocked", label: "台八線-谷關-德基路段38.2km=>38.2km處 道路中斷" },
-  { id: "block_24", lat: 24.25105789799798, lng: 121.16649099943265, status: "partially_blocked", label: "台八線-德基-梨山路段61.5km=>61.5km處 部分中斷" },
-  { id: "block_28", lat: 24.25343406325875, lng: 121.17354795830141, status: "partially_blocked", label: "台八線-德基-梨山路段62.3km=>62.3km處 部分中斷" },
-  { id: "block_25", lat: 24.251149773652614, lng: 121.17072911849732, status: "fully_blocked", label: "台八線-德基-梨山路段62.4km=>62.4km處 道路中斷" },
-  { id: "block_26", lat: 24.252138912920202, lng: 121.17199754756007, status: "partially_blocked", label: "台八線-德基-梨山路段62.5km=>62.5km處 部分中斷" },
-  { id: "block_29", lat: 24.254532958531996, lng: 121.17477256816983, status: "partially_blocked", label: "台八線-德基-梨山路段63.0km=>63.0km處 部分中斷" },
-  { id: "block_30", lat: 24.254808573509422, lng: 121.17526454558924, status: "fully_blocked", label: "台八線-德基-梨山路段63.1km=>63.1km處 道路中斷" },
-  { id: "block_27", lat: 24.252836068654503, lng: 121.1721279512139, status: "fully_blocked", label: "台八線-德基-梨山路段63.3km=>63.3km處 道路中斷" },
-  { id: "block_34", lat: 24.25510577336648, lng: 121.24970590932026, status: "partially_blocked", label: "台八線-梨山-大禹嶺路段96.1km=>96.1km處 部分中斷" },
-  { id: "block_31", lat: 24.254591182825436, lng: 121.24775183663724, status: "fully_blocked", label: "台八線-梨山-大禹嶺路段96.3km=>96.3km處 道路中斷" },
-  { id: "block_33", lat: 24.254168012277688, lng: 121.25231034959876, status: "fully_blocked", label: "台八線-梨山-大禹嶺路段97.4km=>97.4km處 道路中斷" },
-  { id: "block_32", lat: 24.25412538677392, lng: 121.25298046465122, status: "fully_blocked", label: "台八線-梨山-大禹嶺路段97.4km=>97.4km處 道路中斷" },
-  { id: "block_35", lat: 24.254423769462363, lng: 121.25568430808391, status: "partially_blocked", label: "台八線-梨山-大禹嶺路段97.7km=>97.7km處 部分中斷" },
-  { id: "block_36", lat: 24.253827007849864, lng: 121.25366616377585, status: "partially_blocked", label: "台八線-梨山-大禹嶺路段97.8km=>97.8km處 部分中斷" },
-  { id: "block_37", lat: 24.25417512099115, lng: 121.25513107356403, status: "partially_blocked", label: "台八線-梨山-大禹嶺路段97.8km=>97.8km處 部分中斷" },
-  { id: "block_38", lat: 24.186306251672463, lng: 121.32665756854954, status: "partially_blocked", label: "台八線-關原-天祥路段145.5km=>145.5km處 部分中斷" },
-  { id: "block_41", lat: 24.187379427279623, lng: 121.33241501571928, status: "fully_blocked", label: "台八線-關原-天祥路段146.1km=>146.1km處 道路中斷" },
-  { id: "block_40", lat: 24.18838248108385, lng: 121.33478236908104, status: "partially_blocked", label: "台八線-關原-天祥路段146.3km=>146.3km處 部分中斷" },
-  { id: "block_42", lat: 24.185007473705667, lng: 121.34193614571683, status: "partially_blocked", label: "台八線-關原-天祥路段147.0km=>147.0km處 部分中斷" },
-  { id: "block_39", lat: 24.183839179299923, lng: 121.34259589925557, status: "fully_blocked", label: "台八線-關原-天祥路段147.2km=>147.2km處 道路中斷" },
-  { id: "block_43", lat: 24.179793820793563, lng: 121.50990359394893, status: "fully_blocked", label: "台八線-天祥-太魯閣路段175.8km=>175.8km處 道路中斷" },
-  { id: "block_44", lat: 24.17524657513239, lng: 120.93181518751715, status: "partially_blocked", label: "台八線-東勢-天冷路段9.7km=>9.7km處 道路中斷" },
-  { id: "block_45", lat: 24.170584317300907, lng: 120.90581935642837, status: "fully_blocked", label: "台八線-東勢-天冷路段8.7km=>8.7km處 道路中斷" },
-  { id: "block_47", lat: 24.168704946619087, lng: 120.89777502518774, status: "partially_blocked", label: "台八線-東勢-天冷路段6.7km=>6.7km處 道路中斷" },
-  { id: "block_50", lat: 24.165079051253088, lng: 121.60557154094198, status: "partially_blocked", label: "台八線-天祥-太魯閣路段175.7km=>175.7km處 部分中斷" },
-  { id: "block_49", lat: 24.16390910501218, lng: 121.60628538602407, status: "fully_blocked", label: "台八線-天祥-太魯閣路段175.8km=>175.8km處 道路中斷" },
-  { id: "block_46", lat: 24.170192455505827, lng: 120.90524451561367, status: "fully_blocked", label: "台八線-東勢-天冷路段8.1km=>8.1km處 道路中斷" },
+  { id: "block_3", lat: 24.24142253349646, lng: 120.83369109693069, status: "partially_blocked", label: "1.6km=>1.6km處" },
+  { id: "block_2", lat: 24.19641391489506, lng: 120.83896859104198, status: "fully_blocked", label: "6.7km=>6.7km處" },
+  { id: "block_7", lat: 24.17339895177517, lng: 120.83852149496494, status: "fully_blocked", label: "9.4km=>9.4km處" },
+  { id: "block_5", lat: 24.16847971328785, lng: 120.84276812819672, status: "partially_blocked", label: "14.1km=>14.1km處" },
+  { id: "block_6", lat: 24.16543277634449, lng: 121.60416900160862, status: "partially_blocked", label: "173.8km=>173.8km處" },
+  { id: "block_4", lat: 24.160379267144165, lng: 121.6158291888184, status: "fully_blocked", label: "172.5km=>172.5km處" },
+  { id: "block_1", lat: 24.184313927998218, lng: 120.92400483086016, status: "fully_blocked", label: "21.4km=>21.4km處" },
+  { id: "block_9", lat: 24.200794525815, lng: 121.0014835884196, status: "partially_blocked", label: "31.1km=>31.1km處" },
+  { id: "block_15", lat: 24.194074784869002, lng: 120.99453869594981, status: "partially_blocked", label: "31.6km=>31.6km處" },
+  { id: "block_11", lat: 24.197756538540943, lng: 120.99836843335237, status: "fully_blocked", label: "32.0km=>32.0km處" },
+  { id: "block_14", lat: 24.19501644601175, lng: 120.99595799854484, status: "fully_blocked", label: "32.5km=>32.5km處" },
+  { id: "block_13", lat: 24.198346271253712, lng: 121.00018070921294, status: "partially_blocked", label: "32.7km=>32.7km處" },
+  { id: "block_10", lat: 24.20263921503745, lng: 121.00326291780601, status: "partially_blocked", label: "32.8km=>32.8km處" },
+  { id: "block_8", lat: 24.191875969636513, lng: 120.99251898374712, status: "partially_blocked", label: "33.3km=>33.3km處" },
+  { id: "block_17", lat: 24.2030591603107, lng: 121.00800422258834, status: "partially_blocked", label: "34.2km=>34.2km處" },
+  { id: "block_16", lat: 24.202299683641257, lng: 121.00927771273314, status: "fully_blocked", label: "34.4km=>34.4km處" },
+  { id: "block_20", lat: 24.20330933965218, lng: 121.0138720762514, status: "partially_blocked", label: "34.9km=>34.9km處" },
+  { id: "block_18", lat: 24.20417602914229, lng: 121.01433249221168, status: "fully_blocked", label: "35.0km=>35.0km處" },
+  { id: "block_19", lat: 24.206776073010175, lng: 121.01305898438568, status: "fully_blocked", label: "35.3km=>35.3km處" },
+  { id: "block_21", lat: 24.207553392326858, lng: 121.0121773367826, status: "fully_blocked", label: "35.4km=>35.4km處" },
+  { id: "block_22", lat: 24.209765730292602, lng: 121.42489699384845, status: "partially_blocked", label: "155.5km=>155.5km處" },
+  { id: "block_23", lat: 24.214490144955022, lng: 121.03704506585763, status: "fully_blocked", label: "38.2km=>38.2km處" },
+  { id: "block_24", lat: 24.25105789799798, lng: 121.16649099943265, status: "partially_blocked", label: "61.5km=>61.5km處" },
+  { id: "block_28", lat: 24.25343406325875, lng: 121.17354795830141, status: "partially_blocked", label: "62.3km=>62.3km處" },
+  { id: "block_25", lat: 24.251149773652614, lng: 121.17072911849732, status: "fully_blocked", label: "62.4km=>62.4km處" },
+  { id: "block_26", lat: 24.252138912920202, lng: 121.17199754756007, status: "partially_blocked", label: "62.5km=>62.5km處" },
+  { id: "block_29", lat: 24.254532958531996, lng: 121.17477256816983, status: "partially_blocked", label: "63.0km=>63.0km處" },
+  { id: "block_30", lat: 24.254808573509422, lng: 121.17526454558924, status: "fully_blocked", label: "63.1km=>63.1km處" },
+  { id: "block_27", lat: 24.252836068654503, lng: 121.1721279512139, status: "fully_blocked", label: "63.3km=>63.3km處" },
+  { id: "block_34", lat: 24.25510577336648, lng: 121.24970590932026, status: "partially_blocked", label: "96.1km=>96.1km處" },
+  { id: "block_31", lat: 24.254591182825436, lng: 121.24775183663724, status: "fully_blocked", label: "96.3km=>96.3km處" },
+  { id: "block_33", lat: 24.254168012277688, lng: 121.25231034959876, status: "fully_blocked", label: "97.4km=>97.4km處" },
+  { id: "block_32", lat: 24.25412538677392, lng: 121.25298046465122, status: "fully_blocked", label: "97.4km=>97.4km處" },
+  { id: "block_35", lat: 24.254423769462363, lng: 121.25568430808391, status: "partially_blocked", label: "97.7km=>97.7km處" },
+  { id: "block_36", lat: 24.253827007849864, lng: 121.25366616377585, status: "partially_blocked", label: "97.8km=>97.8km處" },
+  { id: "block_37", lat: 24.25417512099115, lng: 121.25513107356403, status: "partially_blocked", label: "97.8km=>97.8km處" },
+  { id: "block_38", lat: 24.186306251672463, lng: 121.32665756854954, status: "partially_blocked", label: "145.5km=>145.5km處" },
+  { id: "block_41", lat: 24.187379427279623, lng: 121.33241501571928, status: "fully_blocked", label: "146.1km=>146.1km處" },
+  { id: "block_40", lat: 24.18838248108385, lng: 121.33478236908104, status: "partially_blocked", label: "146.3km=>146.3km處" },
+  { id: "block_42", lat: 24.185007473705667, lng: 121.34193614571683, status: "partially_blocked", label: "147.0km=>147.0km處" },
+  { id: "block_39", lat: 24.183839179299923, lng: 121.34259589925557, status: "fully_blocked", label: "147.2km=>147.2km處" },
+  { id: "block_43", lat: 24.179793820793563, lng: 121.50990359394893, status: "fully_blocked", label: "175.8km=>175.8km處" },
+  { id: "block_44", lat: 24.17524657513239, lng: 120.93181518751715, status: "partially_blocked", label: "9.7km=>9.7km處" },
+  { id: "block_45", lat: 24.170584317300907, lng: 120.90581935642837, status: "fully_blocked", label: "8.7km=>8.7km處" },
+  { id: "block_47", lat: 24.168704946619087, lng: 120.89777502518774, status: "partially_blocked", label: "6.7km=>6.7km處" },
+  { id: "block_50", lat: 24.165079051253088, lng: 121.60557154094198, status: "partially_blocked", label: "175.7km=>175.7km處" },
+  { id: "block_49", lat: 24.16390910501218, lng: 121.60628538602407, status: "fully_blocked", label: "175.8km=>175.8km處" },
+  { id: "block_46", lat: 24.170192455505827, lng: 120.90524451561367, status: "fully_blocked", label: "8.1km=>8.1km處" },
 ]
 
 function segmentKey(p: SegmentProps): string {
@@ -201,6 +201,41 @@ function computeSegmentBuckets(segments: SegmentFeature[], points: BlockPoint[])
 
 type SegmentStat = { count: number; status: SegmentStatus }
 
+function computePointSegmentLabels(segments: SegmentFeature[], points: BlockPoint[]): Record<string, string> {
+  if (!segments || segments.length === 0) return {}
+  const labels: Record<string, string> = {}
+
+  points.forEach((p) => {
+    let nearestKey = ""
+    let nearestDist = Number.POSITIVE_INFINITY
+    const pxy = toXY(p.lat, p.lng)
+
+    segments.forEach((segment) => {
+      const coordsLngLat = segment.geometry.coordinates as any[]
+      for (let i = 0; i < coordsLngLat.length - 1; i++) {
+        const aLat = coordsLngLat[i][1]
+        const aLng = coordsLngLat[i][0]
+        const bLat = coordsLngLat[i + 1][1]
+        const bLng = coordsLngLat[i + 1][0]
+        const a = toXY(aLat, aLng)
+        const b = toXY(bLat, bLng)
+        const d = pointToSegmentDistanceMeters(pxy, a, b)
+        if (d < nearestDist) {
+          nearestDist = d
+          nearestKey = segmentKey(segment.properties || {})
+        }
+      }
+    })
+
+    if (!nearestKey) return
+    const segment = segments.find((s) => segmentKey(s.properties || {}) === nearestKey)
+    if (!segment) return
+    labels[p.id] = segmentLabel(segment.properties || {})
+  })
+
+  return labels
+}
+
 // ✅ 用 BLOCKAGE_POINTS 找出每個點最近的路段，並累積 count + status
 function computeSegmentStatsFromPoints(segments: SegmentFeature[]): Record<string, SegmentStat> {
   if (!segments || segments.length === 0) return {}
@@ -325,6 +360,7 @@ export default function Tai8LeafletMap({
   const mode = mapMode ?? "county"
   const [taiwanGeo, setTaiwanGeo] = useState<GeoJSONLike | null>(null)
   const segmentBuckets = useMemo(() => computeSegmentBuckets(segments, BLOCKAGE_POINTS), [segments])
+  const pointSegmentLabels = useMemo(() => computePointSegmentLabels(segments, BLOCKAGE_POINTS), [segments])
 
   useEffect(() => {
     let cancelled = false
@@ -743,7 +779,11 @@ export default function Tai8LeafletMap({
       })
     }
 
-    const popupHtml = (bucketLabel: string, text: string) => `
+    const popupHtml = (routeLabel: string, detailText: string, singleLine = false) => {
+      const safeRouteLabel = (routeLabel ?? "").trim() || "未命名路段"
+      const textClass = singleLine ? "seg-pop__text seg-pop__text--single" : "seg-pop__text"
+      const singleLineText = `台八線 · ${safeRouteLabel} 路段 ${detailText}`
+      return `
       <div class="seg-pop">
         <div class="seg-pop__title">路段資訊</div>
 
@@ -763,12 +803,18 @@ export default function Tai8LeafletMap({
 
         <div class="seg-pop__item">
           <img class="seg-pop__icon" src="/icons/tai8_icon.png" alt="tai8" />
-          <div class="seg-pop__text">
-            台八線 · ${bucketLabel ? `${bucketLabel} ` : ""}${text}
+          <div class="${textClass}">
+            ${
+              singleLine
+                ? `<div class="seg-pop__single">${singleLineText}</div>`
+                : `<div class="seg-pop__route">台八線 · ${safeRouteLabel} 路段</div>
+            <div class="seg-pop__detail">${detailText}</div>`
+            }
           </div>
         </div>
       </div>
     `
+    }
 
     if (useAggregate) {
       Object.values(segmentBuckets).forEach((bucket) => {
@@ -779,7 +825,7 @@ export default function Tai8LeafletMap({
         if (fullyCount > 0) {
           const [lat, lng] = offsetLatLng(bucket.center.lat, bucket.center.lng, -18, 0)
           const marker = L.marker([lat, lng], { icon: createIcon("fully_blocked", fullyCount) }).addTo(layer)
-          marker.bindPopup(popupHtml(bucket.label, `路段完全阻斷 ${fullyCount} 處`), {
+          marker.bindPopup(popupHtml(bucket.label, `完全中斷 ${fullyCount} 處`, true), {
             closeButton: true,            // ✅ 右上角 X
             autoClose: true,
             closeOnClick: true,
@@ -791,7 +837,7 @@ export default function Tai8LeafletMap({
         if (partiallyCount > 0) {
           const [lat, lng] = offsetLatLng(bucket.center.lat, bucket.center.lng, 18, 0)
           const marker = L.marker([lat, lng], { icon: createIcon("partially_blocked", partiallyCount) }).addTo(layer)
-          marker.bindPopup(popupHtml(bucket.label, `部分阻斷 ${partiallyCount} 處`), {
+          marker.bindPopup(popupHtml(bucket.label, `部分中斷 ${partiallyCount} 處`, true), {
             closeButton: true,
             autoClose: true,
             closeOnClick: true,
@@ -810,13 +856,21 @@ export default function Tai8LeafletMap({
       filtered.forEach((p) => {
         const icon = createIcon(p.status)
         const marker = L.marker([p.lat, p.lng], { icon }).addTo(layer)
-        marker.bindTooltip(p.label, { direction: "top", offset: L.point(0, -18), opacity: 0.9 })
+        const routeLabel = pointSegmentLabels[p.id] ?? "未命名路段"
+        const statusText = p.status === "fully_blocked" ? "完全中斷" : "部分中斷"
+        marker.bindPopup(popupHtml(routeLabel, `${p.label}（${statusText}）`), {
+          closeButton: true,
+          autoClose: true,
+          closeOnClick: true,
+          offset: L.point(0, -18),
+          className: "seg-pop-wrap",
+        })
       })
     }
 
     layer.addTo(map)
     blockageLayerRef.current = layer
-  }, [mapReady, showFullyBlocked, showPartiallyBlocked, mode, mapZoom, segmentBuckets])
+  }, [mapReady, showFullyBlocked, showPartiallyBlocked, mode, mapZoom, segmentBuckets, pointSegmentLabels])
 
   // 6) 外部縮放控制
   useEffect(() => {
@@ -1052,9 +1106,27 @@ export default function Tai8LeafletMap({
           font-weight: 700;
           color: #111827;
           line-height: 1.2;
-          white-space: nowrap;       /* 可選：不換行 */
-          overflow: hidden;          /* 可選 */
-          text-overflow: ellipsis;   /* 可選：太長變 ... */
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          min-width: 0;
+        }
+        :global(.seg-pop__text--single) {
+          display: block;
+        }
+        :global(.seg-pop__single) {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        :global(.seg-pop__route) {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        :global(.seg-pop__detail) {
+          font-weight: 600;
+          color: #0f172a;
         }
         :global(.seg-pop-wrap .leaflet-popup-close-button) {
           position: absolute;  
