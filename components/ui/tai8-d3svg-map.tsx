@@ -750,7 +750,15 @@ export default function Tai8LeafletMap({
         <div class="seg-pop__divider"></div>
 
         <div class="seg-pop__actions">
-          <a class="seg-pop__more" href="javascript:void(0)">查看詳情 >></a>
+          <a class="seg-pop__more" href="javascript:void(0)">
+            查看詳情
+            <span class="seg-pop__more-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img" focusable="false">
+                <path d="M4.75 5.75a1 1 0 0 1 1.41 0l6.34 6.34a1 1 0 0 1 0 1.41l-6.34 6.34a1 1 0 0 1-1.41-1.41L10.39 12 4.75 7.16a1 1 0 0 1 0-1.41z" />
+                <path d="M11.75 5.75a1 1 0 0 1 1.41 0l6.34 6.34a1 1 0 0 1 0 1.41l-6.34 6.34a1 1 0 0 1-1.41-1.41L17.39 12 11.75 7.16a1 1 0 0 1 0-1.41z" />
+              </svg>
+            </span>
+          </a>
         </div>
 
         <div class="seg-pop__item">
@@ -1002,11 +1010,24 @@ export default function Tai8LeafletMap({
         }
 
         :global(.seg-pop__more) {
+          display: inline-flex;
+          align-items: center;
+          gap: 2px;
           font-size: 12px;
           font-weight: 700;
           color: #f97316;
           text-decoration: underline; /* 底線 */
           text-underline-offset: 2px;
+        }
+        :global(.seg-pop__more-icon) {
+          width: 14px;
+          height: 14px;
+          display: inline-flex;
+        }
+        :global(.seg-pop__more-icon svg) {
+          width: 14px;
+          height: 14px;
+          fill: currentColor;
         }
 
         :global(.seg-pop__item) {
@@ -1034,6 +1055,15 @@ export default function Tai8LeafletMap({
           white-space: nowrap;       /* 可選：不換行 */
           overflow: hidden;          /* 可選 */
           text-overflow: ellipsis;   /* 可選：太長變 ... */
+        }
+        :global(.seg-pop-wrap .leaflet-popup-close-button) {
+          position: absolute;  
+          top: 8px;
+          right: 10px;
+          width: 22px;
+          height: 22px;
+          line-height: 22px;
+          text-align: center;
         }
       `}</style>
     </div>
