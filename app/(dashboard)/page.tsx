@@ -54,14 +54,14 @@ export default function OverviewPage() {
   const [showWeather, setShowWeather] = useState(true)
   const [zoomInSignal, setZoomInSignal] = useState(0)
   const [zoomOutSignal, setZoomOutSignal] = useState(0)
-  const [mapMode, setMapMode] = useState<"topo" | "osm" | "county">("county")
+  const [mapMode, setMapMode] = useState<"satellite" | "osm" | "county">("county")
 
   const fullyBtnVariant = showFullyBlocked ? "default" : "outline"
   const partialBtnVariant = showPartiallyBlocked ? "default" : "outline"
   const mapModeLabel = useMemo(() => {
     if (mapMode === "county") return "⬜ 灰白縣市底圖(GeoJSON)"
     if (mapMode === "osm") return "🗺️ 標準地圖(OSM)"
-    return "⛰️ 地形圖(OpenTopoMap)"
+    return "⛰️ 空拍圖(OpensatelliteMap)"
   }, [mapMode])
 
   return (
@@ -279,11 +279,11 @@ export default function OverviewPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        setMapMode((mode) => (mode === "county" ? "osm" : mode === "osm" ? "topo" : "county"))
+                        setMapMode((mode) => (mode === "county" ? "osm" : mode === "osm" ? "satellite" : "county"))
                       }
                       className="w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-xs font-medium shadow-lg transition-colors hover:bg-slate-50"
                     >
-                      🔁 切換底圖（灰白 → 標準 → 地形）
+                      🔁 切換底圖（灰白 → 標準 → 空拍）
                     </button>
 
                     <div className="rounded-md border bg-white/90 px-3 py-2 text-[11px] text-slate-700 shadow">

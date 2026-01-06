@@ -21,7 +21,7 @@ const SEGMENT_STATUS: Record<string, SegmentStatus> = {
   // "w041-w042": "fully_blocked",
 }
 
-type BaseMode = "topo" | "osm" | "county" // ✅ 新增 county：用 twCounty2010merge 當灰白底圖
+type BaseMode = "satellite" | "osm" | "county" // ✅ 改為 satellite（衛星空拍圖）
 
 function segmentKey(p: SegmentProps): string {
   const a = p.from_id ? String(p.from_id).trim() : ""
@@ -139,8 +139,8 @@ export default function Tai8LeafletMap({
   const leafletMapRef = useRef<LeafletMap | null>(null)
   const leafletNSRef = useRef<LeafletNS | null>(null)
   const polylineLayersRef = useRef<any[]>([])
-  const countyLayerRef = useRef<any>(null) // ✅ 縣市灰白圖層
-  const countyLabelLayerRef = useRef<any>(null) // ✅ 縣市名稱標籤
+  const countyLayerRef = useRef<any>(null)
+  const countyLabelLayerRef = useRef<any>(null)
   const injectedRef = useRef(false)
 
   const [mapReady, setMapReady] = useState(false)
@@ -153,7 +153,6 @@ export default function Tai8LeafletMap({
   } | null>(null)
   const mode = mapMode ?? "county"
 
-  // 縣市底圖資料
   const [taiwanGeo, setTaiwanGeo] = useState<GeoJSONLike | null>(null)
   const [geoLoading, setGeoLoading] = useState(true)
 
@@ -246,7 +245,6 @@ export default function Tai8LeafletMap({
           zoomControl: true,
         })
 
-        // Keep county fill below routes when switching modes.
         if (!map.getPane("countyPane")) {
           const countyPane = map.createPane("countyPane")
           countyPane.style.zIndex = "200"
@@ -258,20 +256,35 @@ export default function Tai8LeafletMap({
 
         leafletMapRef.current = map
 
-        const topoLayer = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
-          maxZoom: 17,
-          attribution: "© OpenStreetMap, SRTM | © OpenTopoMap",
-        })
+        // ✅ 衛星空拍圖圖層（使用多個來源以提高覆蓋率）
+        // 主要使用 ESRI World Imagery，並加入 Google Hybrid 作為備用
+        const satelliteLayer = L.tileLayer(
+          "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+          {
+            maxZoom: 20,
+            attribution: "© Google",
+            errorTileUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", // 透明圖片
+          }
+        )
+        
+        // 備用：ESRI 衛星圖
+        const satelliteLayerAlt = L.tileLayer(
+          "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+          {
+            maxZoom: 18,
+            attribution: "© Esri, Maxar, Earthstar Geographics",
+          }
+        )
 
         const osmLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           maxZoom: 19,
           attribution: "© OpenStreetMap",
         })
 
-        // 預設模式：灰白
-        topoLayer.addTo(map)
+        // 預設載入衛星圖
+        satelliteLayer.addTo(map)
 
-        ;(map as any)._topoLayer = topoLayer
+        ;(map as any)._satelliteLayer = satelliteLayer
         ;(map as any)._osmLayer = osmLayer
 
         setMapReady(true)
@@ -290,14 +303,13 @@ export default function Tai8LeafletMap({
     }
   }, [])
 
-  // ✅ 3) 建立/更新 county 灰白底圖 Layer（GeoJSON -> L.geoJSON）
+  // ✅ 3) 建立/更新 county 灰白底圖 Layer
   useEffect(() => {
     const map = leafletMapRef.current
     const L = leafletNSRef.current
     if (!mapReady || !map || !L) return
     if (!taiwanGeo) return
 
-    // 如果已存在，先移除再重建（避免重複疊）
     if (countyLayerRef.current) {
       try {
         map.removeLayer(countyLayerRef.current)
@@ -348,47 +360,42 @@ export default function Tai8LeafletMap({
 
     countyLabelLayerRef.current = labelLayer
 
-    // 如果目前模式是 county，就加上去
     if (mode === "county") {
       layer.addTo(map)
       labelLayer.addTo(map)
     }
+  }, [taiwanGeo, mapReady, mode])
 
-    // 清掉一次 fit 旗標，讓第一次有路段時能 fit（可選）
-    // injectedRef.current = false
-  }, [taiwanGeo, mapReady]) // mode 另外在切換 effect 控制 add/remove
-
-  // ✅ 4) 模式切換：topo / osm / county
+  // ✅ 4) 模式切換：satellite / osm / county
   const applyMode = (next: BaseMode) => {
     const map = leafletMapRef.current
     const L = leafletNSRef.current
     if (!map || !L) return
 
-    const topoLayer = (map as any)._topoLayer
+    const satelliteLayer = (map as any)._satelliteLayer
     const osmLayer = (map as any)._osmLayer
     const countyLayer = countyLayerRef.current
     const countyLabels = countyLabelLayerRef.current
 
-    // 先全部移除（存在才移除）
-    if (topoLayer && map.hasLayer(topoLayer)) map.removeLayer(topoLayer)
+    // 先全部移除
+    if (satelliteLayer && map.hasLayer(satelliteLayer)) map.removeLayer(satelliteLayer)
     if (osmLayer && map.hasLayer(osmLayer)) map.removeLayer(osmLayer)
     if (countyLayer && map.hasLayer(countyLayer)) map.removeLayer(countyLayer)
     if (countyLabels && map.hasLayer(countyLabels)) map.removeLayer(countyLabels)
 
     // 再加上目標模式
-    if (next === "topo") {
-      topoLayer?.addTo(map)
+    if (next === "satellite") {
+      satelliteLayer?.addTo(map)
     } else if (next === "osm") {
       osmLayer?.addTo(map)
     } else if (next === "county") {
-      // county 模式不需要瓦片，只要 GeoJSON 灰白
       if (countyLayer) countyLayer.addTo(map)
       if (countyLabels) countyLabels.addTo(map)
     }
 
-    // Ensure route layers stay above county fill.
     polylineLayersRef.current.forEach((layer) => layer?.bringToFront?.())
   }
+
   useEffect(() => {
     if (!mapReady) return
     applyMode(mode)
@@ -400,7 +407,6 @@ export default function Tai8LeafletMap({
     const L = leafletNSRef.current
     if (!mapReady || !map || !L) return
 
-    // 清除舊的路段
     polylineLayersRef.current.forEach((layer) => {
       try {
         map.removeLayer(layer)
@@ -413,7 +419,7 @@ export default function Tai8LeafletMap({
     const bounds = L.latLngBounds([])
 
     segments.forEach((segment) => {
-      const coords = (segment.geometry.coordinates as any[]).map((c) => [c[1], c[0]]) // [lat, lon]
+      const coords = (segment.geometry.coordinates as any[]).map((c) => [c[1], c[0]])
       coords.forEach((ll) => bounds.extend(ll))
 
       const props = segment.properties || {}
@@ -468,9 +474,9 @@ export default function Tai8LeafletMap({
   }, [zoomOutSignal])
 
   const modeLabel = useMemo(() => {
-    if (mode === "topo") return "⛰️ 地形圖(OpenTopoMap)"
-    if (mode === "osm") return "🗺️ 標準地圖(OSM)"
-    return "⬜ 灰白縣市底圖(GeoJSON)"
+    if (mode === "satellite") return "🛰️ 衛星空拍圖 (ESRI World Imagery)"
+    if (mode === "osm") return "🗺️ 標準地圖 (OSM)"
+    return "⬜ 灰白縣市底圖 (GeoJSON)"
   }, [mode])
 
   return (
