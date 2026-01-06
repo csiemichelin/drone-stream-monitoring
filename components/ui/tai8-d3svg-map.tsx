@@ -16,9 +16,18 @@ type SegmentProps = {
 type SegmentFeature = GeoJSON.Feature<GeoJSON.LineString, SegmentProps>
 type GeoJSONLike = GeoJSON.FeatureCollection | GeoJSON.Feature
 
-const SEGMENT_STATUS: Record<string, SegmentStatus> = {
-  // 可在此定義特定路段的狀態，例如：
-  // "w041-w042": "fully_blocked",
+// ✅ 測試資料：道路中斷數量（key = "fromId-toId"）
+const SEGMENT_BLOCK_COUNT: Record<string, number> = {
+  // 台八線 9 段（示範）
+  "w001-w002": 0,
+  "w002-w003": 2,
+  "w003-w004": 4,
+  "w004-w005": 6,
+  "w005-w006": 9,
+  "w006-w007": 12,
+  "w007-w008": 0,
+  "w008-w009": 18,
+  "w009-w010": 0,
 }
 
 type BaseMode = "satellite" | "osm" | "county" // ✅ 改為 satellite（衛星空拍圖）
@@ -40,8 +49,13 @@ function segmentLabel(p: SegmentProps): string {
   return segmentKey(p)
 }
 
-const colorByStatus = (s: SegmentStatus) =>
-  s === "fully_blocked" ? "#ef4444" : s === "partially_blocked" ? "#f59e0b" : "#10b981"
+const colorByBlockCount = (n: number) => {
+  if (n <= 0) return "#22c55e"      // 0
+  if (n < 3) return "#facc15"       // <3
+  if (n < 5) return "#f97316"       // <5
+  if (n < 10) return "#ef4444"      // <10
+  return "#7c3aed"                  // >=10 (你圖例最右 15~，這裡用 >=10 當紫色)
+}
 
 async function fetchTai8Subsegments(): Promise<SegmentFeature[]> {
   try {
@@ -116,7 +130,6 @@ type LeafletNS = any
 export default function Tai8LeafletMap({
   showFullyBlocked,
   showPartiallyBlocked,
-  showCctv,
   showWeather,
   zoomInSignal,
   zoomOutSignal,
@@ -124,7 +137,6 @@ export default function Tai8LeafletMap({
 }: {
   showFullyBlocked: boolean
   showPartiallyBlocked: boolean
-  showCctv: boolean
   showWeather: boolean
   zoomInSignal: number
   zoomOutSignal: number
@@ -132,7 +144,6 @@ export default function Tai8LeafletMap({
 }) {
   void showFullyBlocked
   void showPartiallyBlocked
-  void showCctv
   void showWeather
 
   const mapRef = useRef<HTMLDivElement | null>(null)
@@ -149,7 +160,7 @@ export default function Tai8LeafletMap({
   const [loading, setLoading] = useState(true)
   const [selectedSegment, setSelectedSegment] = useState<{
     label: string
-    status: SegmentStatus
+    blockCount: number
     info?: string
   } | null>(null)
   const mode = mapMode ?? "county"
@@ -499,8 +510,8 @@ export default function Tai8LeafletMap({
 
       const props = segment.properties || {}
       const key = segmentKey(props)
-      const status: SegmentStatus = props.status || SEGMENT_STATUS[key] || "clear"
-      const color = colorByStatus(status)
+      const blockCount = Number.isFinite(SEGMENT_BLOCK_COUNT[key]) ? SEGMENT_BLOCK_COUNT[key] : 0
+      const color = colorByBlockCount(blockCount)
 
       const border = L.polyline(coords, {
         color: "white",
@@ -522,7 +533,7 @@ export default function Tai8LeafletMap({
 
       line.on("click", () => {
         const label = segmentLabel(props)
-        setSelectedSegment({ label, status, info: props.info })
+        setSelectedSegment({ label, blockCount, info: props.info })
       })
       line.on("mouseover", () => line.setStyle({ weight: 6 }))
       line.on("mouseout", () => line.setStyle({ weight: 4 }))
@@ -586,18 +597,28 @@ export default function Tai8LeafletMap({
 
       {/* 圖例 */}
       <div className="absolute bottom-8 left-3 z-[500] rounded-md border-2 border-slate-300 bg-white/95 px-3 py-2 text-xs shadow-lg">
-        <div className="mb-2 font-semibold text-slate-700">路段狀態</div>
-        <div className="mb-1 flex items-center gap-2">
-          <div className="h-1 w-6 rounded" style={{ background: "#16a34a" }} />
-          <span>通行順暢</span>
-        </div>
-        <div className="mb-1 flex items-center gap-2">
-          <div className="h-1 w-6 rounded" style={{ background: "#f59e0b" }} />
-          <span>部分阻斷</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="h-1 w-6 rounded" style={{ background: "#ef4444" }} />
-          <span>完全阻斷</span>
+        <div className="mb-2 font-semibold text-slate-700">道路中斷數量</div>
+        <div className="flex flex-col items-start gap-1">
+          {/* 色塊 */}
+          <div className="flex items-center gap-[2px]">
+            <div className="h-3 w-5 rounded-sm bg-[#22c55e]" />
+            <div className="h-3 w-5 rounded-sm bg-[#facc15]" />
+            <div className="h-3 w-5 rounded-sm bg-[#f97316]" />
+            <div className="h-3 w-5 rounded-sm bg-[#ef4444]" />
+            <div className="relative h-3 w-6">
+              <div className="h-3 w-full rounded-l-sm bg-[#7c3aed]" />
+              <div className="absolute right-[-6px] top-1/2 h-0 w-0 -translate-y-1/2 border-y-[6px] border-y-transparent border-l-[6px] border-l-[#7c3aed]" />
+            </div>
+          </div>
+
+          {/* 刻度（對齊色塊寬度） */}
+          <div className="flex items-start gap-[2px] text-[10px] text-slate-600">
+            <div className="w-5 text-left">0</div>
+            <div className="w-5 text-left">3</div>
+            <div className="w-5 text-left">5</div>
+            <div className="w-5 text-left">10</div>
+            <div className="w-5 text-left">15 ~</div>
+          </div>
         </div>
       </div>
 

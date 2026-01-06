@@ -50,7 +50,6 @@ export default function OverviewPage() {
 
   const [showFullyBlocked, setShowFullyBlocked] = useState(true)
   const [showPartiallyBlocked, setShowPartiallyBlocked] = useState(true)
-  const [showCctv, setShowCctv] = useState(true)
   const [showWeather, setShowWeather] = useState(true)
   const [zoomInSignal, setZoomInSignal] = useState(0)
   const [zoomOutSignal, setZoomOutSignal] = useState(0)
@@ -211,21 +210,6 @@ export default function OverviewPage() {
                 <CardTitle className="text-lg">Taiwan Command Map · Tai-8 Focus</CardTitle>
                 <CardDescription>Monitor Provincial Highway 8 segments with filters</CardDescription>
               </div>
-
-              <div className="flex items-center gap-2">
-                <Button variant={fullyBtnVariant} size="sm" onClick={() => setShowFullyBlocked((v) => !v)}>
-                  Fully blocked
-                </Button>
-                <Button variant={partialBtnVariant} size="sm" onClick={() => setShowPartiallyBlocked((v) => !v)}>
-                  Partially blocked
-                </Button>
-                <Button variant="outline" size="icon" onClick={() => setZoomInSignal((n) => n + 1)}>
-                  +
-                </Button>
-                <Button variant="outline" size="icon" onClick={() => setZoomOutSignal((n) => n + 1)}>
-                  -
-                </Button>
-              </div>
             </CardHeader>
 
             <CardContent className="flex-1 min-h-0 relative overflow-hidden">
@@ -252,10 +236,6 @@ export default function OverviewPage() {
                           onChange={(e) => setShowPartiallyBlocked(e.target.checked)}
                         />
                         Partially blocked
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer select-none">
-                        <input type="checkbox" checked={showCctv} onChange={(e) => setShowCctv(e.target.checked)} />
-                        Live CCTV
                       </label>
                       <label className="flex items-center gap-2 cursor-pointer select-none">
                         <input type="checkbox" checked={showWeather} onChange={(e) => setShowWeather(e.target.checked)} />
@@ -297,7 +277,6 @@ export default function OverviewPage() {
                     <Tai8D3SvgMap
                       showFullyBlocked={showFullyBlocked}
                       showPartiallyBlocked={showPartiallyBlocked}
-                      showCctv={showCctv}
                       showWeather={showWeather}
                       zoomInSignal={zoomInSignal}
                       zoomOutSignal={zoomOutSignal}
