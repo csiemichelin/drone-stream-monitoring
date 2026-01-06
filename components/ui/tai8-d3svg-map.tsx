@@ -128,6 +128,77 @@ function pointToSegmentDistanceMeters(
   return Math.sqrt(dx * dx + dy * dy)
 }
 
+type SegmentBucket = {
+  center: { lat: number; lng: number }
+  label: string
+  fully: BlockPoint[]
+  partially: BlockPoint[]
+}
+
+const AGGREGATE_ZOOM_THRESHOLD = 12
+
+function segmentCenter(segment: SegmentFeature): { lat: number; lng: number } | null {
+  const coordsLngLat = segment.geometry.coordinates as any[]
+  if (!coordsLngLat || coordsLngLat.length === 0) return null
+  const mid = coordsLngLat[Math.floor(coordsLngLat.length / 2)]
+  return { lat: mid[1], lng: mid[0] }
+}
+
+function computeSegmentBuckets(segments: SegmentFeature[], points: BlockPoint[]): Record<string, SegmentBucket> {
+  if (!segments || segments.length === 0) return {}
+
+  const buckets: Record<string, SegmentBucket> = {}
+  segments.forEach((segment) => {
+    const key = segmentKey(segment.properties || {})
+    const center = segmentCenter(segment)
+    if (!center) return
+    buckets[key] = {
+      center,
+      label: segmentLabel(segment.properties || {}),
+      fully: [],
+      partially: [],
+    }
+  })
+
+  points.forEach((p) => {
+    let nearestKey = ""
+    let nearestDist = Number.POSITIVE_INFINITY
+    const pxy = toXY(p.lat, p.lng)
+
+    segments.forEach((segment) => {
+      const coordsLngLat = segment.geometry.coordinates as any[]
+      for (let i = 0; i < coordsLngLat.length - 1; i++) {
+        const aLat = coordsLngLat[i][1]
+        const aLng = coordsLngLat[i][0]
+        const bLat = coordsLngLat[i + 1][1]
+        const bLng = coordsLngLat[i + 1][0]
+        const a = toXY(aLat, aLng)
+        const b = toXY(bLat, bLng)
+        const d = pointToSegmentDistanceMeters(pxy, a, b)
+        if (d < nearestDist) {
+          nearestDist = d
+          nearestKey = segmentKey(segment.properties || {})
+        }
+      }
+    })
+
+    if (!nearestKey) return
+    if (!buckets[nearestKey]) {
+      buckets[nearestKey] = {
+        center: { lat: p.lat, lng: p.lng },
+        label: "",
+        fully: [],
+        partially: [],
+      }
+    }
+
+    if (p.status === "fully_blocked") buckets[nearestKey].fully.push(p)
+    else buckets[nearestKey].partially.push(p)
+  })
+
+  return buckets
+}
+
 type SegmentStat = { count: number; status: SegmentStatus }
 
 // ✅ 用 BLOCKAGE_POINTS 找出每個點最近的路段，並累積 count + status
@@ -249,9 +320,11 @@ export default function Tai8LeafletMap({
     status: SegmentStatus
     info?: string
   } | null>(null)
+  const [mapZoom, setMapZoom] = useState<number | null>(null)
 
   const mode = mapMode ?? "county"
   const [taiwanGeo, setTaiwanGeo] = useState<GeoJSONLike | null>(null)
+  const segmentBuckets = useMemo(() => computeSegmentBuckets(segments, BLOCKAGE_POINTS), [segments])
 
   useEffect(() => {
     let cancelled = false
@@ -363,6 +436,7 @@ export default function Tai8LeafletMap({
         }
 
         leafletMapRef.current = map
+        setMapZoom(map.getZoom())
 
         const satelliteLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
           attribution: "© Google",
@@ -394,6 +468,16 @@ export default function Tai8LeafletMap({
       }
     }
   }, [])
+
+  useEffect(() => {
+    const map = leafletMapRef.current
+    if (!map) return
+    const handleZoom = () => setMapZoom(map.getZoom())
+    map.on("zoomend", handleZoom)
+    return () => {
+      map.off("zoomend", handleZoom)
+    }
+  }, [mapReady])
 
   useEffect(() => {
     const map = leafletMapRef.current
@@ -633,33 +717,77 @@ export default function Tai8LeafletMap({
     }
 
     const layer = L.layerGroup()
-    const filtered = BLOCKAGE_POINTS.filter((p) => {
-      if (p.status === "fully_blocked" && !showFullyBlocked) return false
-      if (p.status === "partially_blocked" && !showPartiallyBlocked) return false
-      return true
-    })
+    const useAggregate = mapZoom !== null && mapZoom <= AGGREGATE_ZOOM_THRESHOLD
 
-    filtered.forEach((p) => {
-      const bgColor = p.status === "fully_blocked" ? "#ef4444" : "#f59e0b"
-      const imgSrc = p.status === "fully_blocked" ? "/icons/fully_blocked.png" : "/icons/partially_blocked.png"
-      const icon = L.divIcon({
+    const offsetLatLng = (lat: number, lng: number, dx: number, dy: number) => {
+      const projected = map.project([lat, lng])
+      const shifted = projected.add([dx, dy])
+      const ll = map.unproject(shifted)
+      return [ll.lat, ll.lng]
+    }
+
+    const createIcon = (status: "fully_blocked" | "partially_blocked", count?: number) => {
+      const bgColor = status === "fully_blocked" ? "#ef4444" : "#f59e0b"
+      const imgSrc = status === "fully_blocked" ? "/icons/fully_blocked.png" : "/icons/partially_blocked.png"
+      const countHtml = typeof count === "number" ? `<span class="blockage-count">${count}</span>` : ""
+      return L.divIcon({
         className: "blockage-icon",
         html: `
           <div class="blockage-pin" style="background:${bgColor}">
-            <img src="${imgSrc}" alt="${p.label}" />
+            <img src="${imgSrc}" alt="${status}" />
+            ${countHtml}
           </div>
         `,
         iconSize: [36, 36],
         iconAnchor: [18, 18],
       })
+    }
 
-      const marker = L.marker([p.lat, p.lng], { icon }).addTo(layer)
-      marker.bindTooltip(p.label, { direction: "top", offset: L.point(0, -18), opacity: 0.9 })
-    })
+    if (useAggregate) {
+      Object.values(segmentBuckets).forEach((bucket) => {
+        const fullyCount = showFullyBlocked ? bucket.fully.length : 0
+        const partiallyCount = showPartiallyBlocked ? bucket.partially.length : 0
+        if (fullyCount === 0 && partiallyCount === 0) return
+
+        if (fullyCount > 0) {
+          const [lat, lng] = offsetLatLng(bucket.center.lat, bucket.center.lng, -18, 0)
+          const marker = L.marker([lat, lng], { icon: createIcon("fully_blocked", fullyCount) }).addTo(layer)
+          const label = bucket.label ? `${bucket.label} - ` : ""
+          marker.bindTooltip(`${label}完全阻斷 ${fullyCount} 處`, {
+            direction: "top",
+            offset: L.point(0, -18),
+            opacity: 0.9,
+          })
+        }
+
+        if (partiallyCount > 0) {
+          const [lat, lng] = offsetLatLng(bucket.center.lat, bucket.center.lng, 18, 0)
+          const marker = L.marker([lat, lng], { icon: createIcon("partially_blocked", partiallyCount) }).addTo(layer)
+          const label = bucket.label ? `${bucket.label} - ` : ""
+          marker.bindTooltip(`${label}部分阻斷 ${partiallyCount} 處`, {
+            direction: "top",
+            offset: L.point(0, -18),
+            opacity: 0.9,
+          })
+        }
+      })
+    } else {
+      const filtered = BLOCKAGE_POINTS.filter((p) => {
+        if (p.status === "fully_blocked" && !showFullyBlocked) return false
+        if (p.status === "partially_blocked" && !showPartiallyBlocked) return false
+        return true
+      })
+
+      filtered.forEach((p) => {
+        const icon = createIcon(p.status)
+        const marker = L.marker([p.lat, p.lng], { icon }).addTo(layer)
+        marker.bindTooltip(p.label, { direction: "top", offset: L.point(0, -18), opacity: 0.9 })
+      })
+    }
 
     layer.addTo(map)
     blockageLayerRef.current = layer
-  }, [mapReady, showFullyBlocked, showPartiallyBlocked, mode])
+  }, [mapReady, showFullyBlocked, showPartiallyBlocked, mode, mapZoom, segmentBuckets])
 
   // 6) 外部縮放控制
   useEffect(() => {
@@ -792,13 +920,14 @@ export default function Tai8LeafletMap({
         }
         :global(.segment-text-label) {
           color: #111827;
-          font-size: 12px;
+          font-size: 14px;
           font-weight: 700;
           text-shadow: 0 1px 2px rgba(255, 255, 255, 0.95);
           white-space: nowrap;
         }
 
         :global(.blockage-pin) {
+          position: relative;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -813,6 +942,22 @@ export default function Tai8LeafletMap({
           object-fit: cover;
           border-radius: 9999px;
           background: rgba(255, 255, 255, 0.2);
+        }
+        :global(.blockage-count) {
+          position: absolute;
+          right: -6px;
+          top: -6px;
+          min-width: 18px;
+          height: 18px;
+          padding: 0 4px;
+          border-radius: 9999px;
+          background: #0369a1;
+          color: #fff;
+          font-size: 11px;
+          font-weight: 700;
+          line-height: 18px;
+          text-align: center;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
         }
       `}</style>
     </div>
