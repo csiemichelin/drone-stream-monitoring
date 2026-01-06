@@ -640,7 +640,7 @@ export default function Tai8LeafletMap({
 
     if (!map.getPane("segmentLabelPane")) {
       const p = map.createPane("segmentLabelPane")
-      p.style.zIndex = "600"
+      p.style.zIndex = "800"
     }
 
     const addPointLabel = (name: string, lat: number, lng: number) => {
@@ -650,11 +650,15 @@ export default function Tai8LeafletMap({
       seenNames.add(n)
 
       const anchor = L.circleMarker([lat, lng], {
-        radius: 1,
-        opacity: 0,
-        fillOpacity: 0,
+        radius: 4,
+        opacity: 1,
+        fillOpacity: 0.9,
+        color: "#000000",
+        fillColor: "#0369a1",
+        weight: 1,
         interactive: false,
         pane: "segmentLabelPane",
+        className: "segment-point",
       })
 
       const LABEL_OFFSET_BY_NAME: Record<string, { x: number; y: number }> = {
@@ -681,6 +685,7 @@ export default function Tai8LeafletMap({
       })
 
       labelLayer.addLayer(anchor)
+      anchor.bringToFront()
     }
 
     segments.forEach((segment) => {
