@@ -9,7 +9,7 @@ import { dataStore } from "@/lib/store"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ListTodo, Radio, Bell, AlertTriangle, Layers } from "lucide-react"
+import { ListTodo, Radio, Bell, AlertTriangle, Layers, CloudSun, HardHat } from "lucide-react"
 
 const Tai8D3SvgMap = dynamic(() => import("@/components/ui/tai8-d3svg-map"), {
   ssr: false,
@@ -239,26 +239,78 @@ export default function OverviewPage() {
                       <span>資訊篩選</span>
                     </div>
                     <div className="space-y-2 text-xs text-muted-foreground">
-                      <label className="flex items-center gap-2 cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={showFullyBlocked}
-                          onChange={(e) => setShowFullyBlocked(e.target.checked)}
-                        />
-                        Fully blocked
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={showPartiallyBlocked}
-                          onChange={(e) => setShowPartiallyBlocked(e.target.checked)}
-                        />
-                        Partially blocked
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer select-none">
-                        <input type="checkbox" checked={showWeather} onChange={(e) => setShowWeather(e.target.checked)} />
-                        Weather overlay
-                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setShowFullyBlocked((v) => !v)}
+                        className="flex w-full items-center gap-4 cursor-pointer select-none"
+                      >
+                        <span
+                          className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+                            showFullyBlocked ? "bg-red-600" : "bg-slate-300"
+                          }`}
+                        >
+                          <Image
+                            src="/icons/fully_blocked.png"
+                            alt="完全阻斷"
+                            width={36}
+                            height={36}
+                            className="h-9 w-9 rounded-full object-cover"
+                          />
+                        </span>
+                        <span
+                          className={`transition-colors ${
+                            showFullyBlocked ? "font-semibold text-slate-900" : "text-slate-600"
+                          }`}
+                        >
+                          完全阻斷
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowPartiallyBlocked((v) => !v)}
+                        className="flex w-full items-center gap-4 cursor-pointer select-none"
+                      >
+                        <span
+                          className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+                            showPartiallyBlocked ? "bg-amber-500" : "bg-slate-300"
+                          }`}
+                        >
+                          <Image
+                            src="/icons/partially_blocked.png"
+                            alt="部分阻斷"
+                            width={36}
+                            height={36}
+                            className="h-9 w-9 rounded-full object-cover"
+                          />
+                        </span>
+                        <span
+                          className={`transition-colors ${
+                            showPartiallyBlocked ? "font-semibold text-slate-900" : "text-slate-600"
+                          }`}
+                        >
+                          部分阻斷
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowWeather((v) => !v)}
+                        className="flex w-full items-center gap-4 cursor-pointer select-none"
+                      >
+                        <span
+                          className={`flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors ${
+                            showWeather ? "bg-sky-700" : "bg-slate-300"
+                          }`}
+                        >
+                          <CloudSun className="h-5 w-5" />
+                        </span>
+                        <span
+                          className={`text-slate-700 transition-colors ${
+                            showWeather ? "font-semibold text-slate-900" : "text-slate-600"
+                          }`}
+                        >
+                          天氣資訊
+                        </span>
+                      </button>
                     </div>
                   
                   <div className="pt-3 mt-2 border-t border-slate-200/70 space-y-2 mt-auto">
