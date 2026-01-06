@@ -141,6 +141,7 @@ export default function Tai8LeafletMap({
   const polylineLayersRef = useRef<any[]>([])
   const countyLayerRef = useRef<any>(null)
   const countyLabelLayerRef = useRef<any>(null)
+  const segmentLabelLayerRef = useRef<any>(null)
   const injectedRef = useRef(false)
 
   const [mapReady, setMapReady] = useState(false)
@@ -376,12 +377,14 @@ export default function Tai8LeafletMap({
     const osmLayer = (map as any)._osmLayer
     const countyLayer = countyLayerRef.current
     const countyLabels = countyLabelLayerRef.current
+    const segLabels = segmentLabelLayerRef.current
 
     // 先全部移除
     if (satelliteLayer && map.hasLayer(satelliteLayer)) map.removeLayer(satelliteLayer)
     if (osmLayer && map.hasLayer(osmLayer)) map.removeLayer(osmLayer)
     if (countyLayer && map.hasLayer(countyLayer)) map.removeLayer(countyLayer)
     if (countyLabels && map.hasLayer(countyLabels)) map.removeLayer(countyLabels)
+    if (segLabels && map.hasLayer(segLabels)) map.removeLayer(segLabels)
 
     // 再加上目標模式
     if (next === "satellite") {
@@ -391,6 +394,7 @@ export default function Tai8LeafletMap({
     } else if (next === "county") {
       if (countyLayer) countyLayer.addTo(map)
       if (countyLabels) countyLabels.addTo(map)
+      if (segLabels) segLabels.addTo(map)
     }
 
     polylineLayersRef.current.forEach((layer) => layer?.bringToFront?.())
@@ -407,6 +411,7 @@ export default function Tai8LeafletMap({
     const L = leafletNSRef.current
     if (!mapReady || !map || !L) return
 
+    // 清掉舊線
     polylineLayersRef.current.forEach((layer) => {
       try {
         map.removeLayer(layer)
@@ -414,12 +419,75 @@ export default function Tai8LeafletMap({
     })
     polylineLayersRef.current = []
 
+    // ✅ 清掉舊 label layer
+    if (segmentLabelLayerRef.current) {
+      try {
+        map.removeLayer(segmentLabelLayerRef.current)
+      } catch {}
+      segmentLabelLayerRef.current = null
+    }
+
     if (!segments || segments.length === 0) return
 
     const bounds = L.latLngBounds([])
 
+    // ✅ 建一個 layerGroup 放端點 label
+    const labelLayer = L.layerGroup()
+    const seenNames = new Set<string>()
+
+    // ✅ 建 pane 讓文字在最上層（只建一次也可以）
+    if (!map.getPane("segmentLabelPane")) {
+      const p = map.createPane("segmentLabelPane")
+      p.style.zIndex = "600" // 比 countyLabelPane 更高也行
+    }
+
+    const addPointLabel = (name: string, lat: number, lng: number) => {
+      const n = (name ?? "").trim()
+      if (!n) return
+      if (seenNames.has(n)) return
+      seenNames.add(n)
+
+      // 用 circleMarker 當 anchor（透明、不擋線）
+      const anchor = L.circleMarker([lat, lng], {
+        radius: 1,
+        opacity: 0,
+        fillOpacity: 0,
+        interactive: false,
+        pane: "segmentLabelPane",
+      })
+
+      const LABEL_OFFSET_BY_NAME: Record<string, { x: number; y: number }> = {
+        天冷: { x: 5, y: -1 }, // ✅ 例：往右一點、上移少一點，避開線
+        谷關: { x: 8, y: 26 },
+        大禹嶺: { x: -6, y: 27 },
+        天祥: { x: -7, y: 28 },
+        太魯閣: { x: 8, y: 0 },
+        新城: { x: -18, y: 24 },
+        // 德基: { x: 10, y: -14 },
+      }
+
+      const getLabelOffset = (name: string) => {
+        const n = (name ?? "").trim()
+        const o = LABEL_OFFSET_BY_NAME[n]
+        // 預設偏移（沒有特別設定就用這個）
+        return L.point(o?.x ?? 0, o?.y ?? 0)
+      }
+
+      // permanent tooltip：只有文字、偏移避免壓在路線上
+      anchor.bindTooltip(n, {
+        permanent: true,
+        direction: "top",
+        offset: getLabelOffset(n),
+        opacity: 1,
+        className: "segment-text-label",
+      })
+
+      labelLayer.addLayer(anchor)
+    }
+
     segments.forEach((segment) => {
-      const coords = (segment.geometry.coordinates as any[]).map((c) => [c[1], c[0]])
+      const coordsLngLat = segment.geometry.coordinates as any[]
+      const coords = coordsLngLat.map((c) => [c[1], c[0]]) // [lat,lng]
       coords.forEach((ll) => bounds.extend(ll))
 
       const props = segment.properties || {}
@@ -449,16 +517,29 @@ export default function Tai8LeafletMap({
         const label = segmentLabel(props)
         setSelectedSegment({ label, status, info: props.info })
       })
-
       line.on("mouseover", () => line.setStyle({ weight: 6 }))
       line.on("mouseout", () => line.setStyle({ weight: 4 }))
+
+      // ✅ 端點 label：用線段第一點 / 最後一點
+      const first = coords[0]
+      const last = coords[coords.length - 1]
+      if (first && props.from_name) addPointLabel(String(props.from_name), first[0], first[1])
+      if (last && props.to_name) addPointLabel(String(props.to_name), last[0], last[1])
     })
+
+    // ✅ 存 ref
+    segmentLabelLayerRef.current = labelLayer
+
+    // ✅ 只在 county 模式加上 label（你要灰白地圖顯示）
+    if (mode === "county") {
+      labelLayer.addTo(map)
+    }
 
     if (!injectedRef.current && bounds.isValid()) {
       injectedRef.current = true
       map.fitBounds(bounds.pad(0.15))
     }
-  }, [segments, mapReady])
+  }, [segments, mapReady, mode])
 
   // 6) 外部縮放控制
   useEffect(() => {
@@ -569,6 +650,24 @@ export default function Tai8LeafletMap({
           font-size: 18px;
           font-weight: 600;
           text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
+        }
+        :global(.segment-text-label) {
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+        }
+
+        :global(.segment-text-label::before) {
+          display: none !important; /* 移除 tooltip 小箭頭 */
+        }
+
+        :global(.segment-text-label) {
+          color: #111827;
+          font-size: 12px;
+          font-weight: 700;
+          text-shadow: 0 1px 2px rgba(255, 255, 255, 0.95); /* 讓字在灰底上可讀，但不蓋線 */
+          white-space: nowrap;
         }
       `}</style>
     </div>
