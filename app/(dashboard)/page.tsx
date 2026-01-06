@@ -55,6 +55,10 @@ export default function OverviewPage() {
   const [zoomInSignal, setZoomInSignal] = useState(0)
   const [zoomOutSignal, setZoomOutSignal] = useState(0)
   const [mapMode, setMapMode] = useState<"satellite" | "osm" | "county">("county")
+  const nextMapMode = useMemo<"satellite" | "osm" | "county">(
+    () => (mapMode === "county" ? "osm" : mapMode === "osm" ? "satellite" : "county"),
+    [mapMode]
+  )
 
   const fullyBtnVariant = showFullyBlocked ? "default" : "outline"
   const partialBtnVariant = showPartiallyBlocked ? "default" : "outline"
@@ -229,7 +233,7 @@ export default function OverviewPage() {
               <div className="absolute inset-4 rounded-lg border bg-white/80 backdrop-blur-sm shadow-sm overflow-hidden">
                 <div className="grid grid-cols-1 md:grid-cols-6 h-full">
                   {/* Filters panel */}
-                  <div className="p-4 border-b md:border-b-0 md:border-r bg-white/90 space-y-3">
+                  <div className="p-4 border-b md:border-b-0 md:border-r bg-white/90 space-y-3 flex flex-col h-full">
                     <p className="text-xs font-semibold text-muted-foreground">Filters</p>
                     <div className="space-y-2 text-xs text-muted-foreground">
                       <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -253,21 +257,34 @@ export default function OverviewPage() {
                         Weather overlay
                       </label>
                     </div>
-
-                  <div className="pt-3 mt-2 border-t border-slate-200/70 space-y-2">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setMapMode((mode) => (mode === "county" ? "osm" : mode === "osm" ? "satellite" : "county"))
-                      }
-                      className="w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-xs font-medium shadow-lg transition-colors hover:bg-slate-50"
-                    >
-                      🔁 切換底圖（灰白 → 標準 → 空拍）
-                    </button>
-
+                  
+                  <div className="pt-3 mt-2 border-t border-slate-200/70 space-y-2 mt-auto">
                     <div className="rounded-md border bg-white/90 px-3 py-2 text-[11px] text-slate-700 shadow">
                       目前：{mapModeLabel}
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setMapMode(nextMapMode)}
+                      className="w-full overflow-hidden rounded-md border-2 border-slate-300 bg-white shadow-lg transition hover:-translate-y-[1px] hover:shadow-xl active:translate-y-0"
+                    >
+                      <div className="relative h-28 w-full">
+                        <Image
+                          src={`/images/${nextMapMode}.jpg`}
+                          alt={`${nextMapMode} preview`}
+                          fill
+                          className="object-cover"
+                          sizes="100vw"
+                          priority={nextMapMode === "satellite"}
+                        />
+                      </div>
+                      <div className="border-t px-3 py-2 text-center text-xs font-semibold text-slate-700">
+                        {nextMapMode === "satellite"
+                          ? "下一個：衛星空拍圖"
+                          : nextMapMode === "osm"
+                          ? "下一個：標準地圖"
+                          : "下一個：灰白底圖"}
+                      </div>
+                    </button>
                   </div>
                 </div>
 
