@@ -128,6 +128,39 @@ function pointToSegmentDistanceMeters(
   return Math.sqrt(dx * dx + dy * dy)
 }
 
+function matchSegmentKeyForPoint(segments: SegmentFeature[], point: BlockPoint): string {
+  const label = String(point.label ?? "")
+  for (const segment of segments) {
+    const props = segment.properties || {}
+    const from = String(props.from_name ?? "").trim()
+    const to = String(props.to_name ?? "").trim()
+    if (from && to && label.includes(from) && label.includes(to)) {
+      return segmentKey(props)
+    }
+  }
+
+  let nearestKey = ""
+  let nearestDist = Number.POSITIVE_INFINITY
+  const pxy = toXY(point.lat, point.lng)
+  segments.forEach((segment) => {
+    const coordsLngLat = segment.geometry.coordinates as any[]
+    for (let i = 0; i < coordsLngLat.length - 1; i++) {
+      const aLat = coordsLngLat[i][1]
+      const aLng = coordsLngLat[i][0]
+      const bLat = coordsLngLat[i + 1][1]
+      const bLng = coordsLngLat[i + 1][0]
+      const a = toXY(aLat, aLng)
+      const b = toXY(bLat, bLng)
+      const d = pointToSegmentDistanceMeters(pxy, a, b)
+      if (d < nearestDist) {
+        nearestDist = d
+        nearestKey = segmentKey(segment.properties || {})
+      }
+    }
+  })
+  return nearestKey
+}
+
 type SegmentBucket = {
   center: { lat: number; lng: number }
   label: string
@@ -161,27 +194,7 @@ function computeSegmentBuckets(segments: SegmentFeature[], points: BlockPoint[])
   })
 
   points.forEach((p) => {
-    let nearestKey = ""
-    let nearestDist = Number.POSITIVE_INFINITY
-    const pxy = toXY(p.lat, p.lng)
-
-    segments.forEach((segment) => {
-      const coordsLngLat = segment.geometry.coordinates as any[]
-      for (let i = 0; i < coordsLngLat.length - 1; i++) {
-        const aLat = coordsLngLat[i][1]
-        const aLng = coordsLngLat[i][0]
-        const bLat = coordsLngLat[i + 1][1]
-        const bLng = coordsLngLat[i + 1][0]
-        const a = toXY(aLat, aLng)
-        const b = toXY(bLat, bLng)
-        const d = pointToSegmentDistanceMeters(pxy, a, b)
-        if (d < nearestDist) {
-          nearestDist = d
-          nearestKey = segmentKey(segment.properties || {})
-        }
-      }
-    })
-
+    const nearestKey = matchSegmentKeyForPoint(segments, p)
     if (!nearestKey) return
     if (!buckets[nearestKey]) {
       buckets[nearestKey] = {
@@ -204,36 +217,27 @@ type SegmentStat = { count: number; status: SegmentStatus }
 function computePointSegmentLabels(segments: SegmentFeature[], points: BlockPoint[]): Record<string, string> {
   if (!segments || segments.length === 0) return {}
   const labels: Record<string, string> = {}
+  const segmentByKey: Record<string, SegmentFeature> = {}
+  segments.forEach((s) => {
+    segmentByKey[segmentKey(s.properties || {})] = s
+  })
 
   points.forEach((p) => {
-    let nearestKey = ""
-    let nearestDist = Number.POSITIVE_INFINITY
-    const pxy = toXY(p.lat, p.lng)
-
-    segments.forEach((segment) => {
-      const coordsLngLat = segment.geometry.coordinates as any[]
-      for (let i = 0; i < coordsLngLat.length - 1; i++) {
-        const aLat = coordsLngLat[i][1]
-        const aLng = coordsLngLat[i][0]
-        const bLat = coordsLngLat[i + 1][1]
-        const bLng = coordsLngLat[i + 1][0]
-        const a = toXY(aLat, aLng)
-        const b = toXY(bLat, bLng)
-        const d = pointToSegmentDistanceMeters(pxy, a, b)
-        if (d < nearestDist) {
-          nearestDist = d
-          nearestKey = segmentKey(segment.properties || {})
-        }
-      }
-    })
-
+    const nearestKey = matchSegmentKeyForPoint(segments, p)
     if (!nearestKey) return
-    const segment = segments.find((s) => segmentKey(s.properties || {}) === nearestKey)
+    const segment = segmentByKey[nearestKey]
     if (!segment) return
     labels[p.id] = segmentLabel(segment.properties || {})
   })
 
   return labels
+}
+
+function formatBlockageDetail(label: string, status: BlockPoint["status"]) {
+  const statusText = status === "fully_blocked" ? "完全中斷" : "部分中斷"
+  const match = label.match(/(\d+(?:\.\d+)?km=>\d+(?:\.\d+)?km處)/)
+  if (match) return `${match[1]}：${statusText}`
+  return `${label}：${statusText}`
 }
 
 // ✅ 用 BLOCKAGE_POINTS 找出每個點最近的路段，並累積 count + status
@@ -254,27 +258,7 @@ function computeSegmentStatsFromPoints(segments: SegmentFeature[]): Record<strin
   }
 
   BLOCKAGE_POINTS.forEach((p) => {
-    let nearestKey = ""
-    let nearestDist = Number.POSITIVE_INFINITY
-    const pxy = toXY(p.lat, p.lng)
-
-    segments.forEach((segment) => {
-      const coordsLngLat = segment.geometry.coordinates as any[]
-      for (let i = 0; i < coordsLngLat.length - 1; i++) {
-        const aLat = coordsLngLat[i][1]
-        const aLng = coordsLngLat[i][0]
-        const bLat = coordsLngLat[i + 1][1]
-        const bLng = coordsLngLat[i + 1][0]
-        const a = toXY(aLat, aLng)
-        const b = toXY(bLat, bLng)
-        const d = pointToSegmentDistanceMeters(pxy, a, b)
-        if (d < nearestDist) {
-          nearestDist = d
-          nearestKey = segmentKey(segment.properties || {})
-        }
-      }
-    })
-
+    const nearestKey = matchSegmentKeyForPoint(segments, p)
     if (!nearestKey) return
     if (!stats[nearestKey]) stats[nearestKey] = { count: 0, status: "clear" }
 
@@ -350,6 +334,7 @@ export default function Tai8LeafletMap({
   const [segmentStats, setSegmentStats] = useState<Record<string, SegmentStat>>({})
   const [loading, setLoading] = useState(true)
   const [selectedSegment, setSelectedSegment] = useState<{
+    key: string
     label: string
     blockCount: number
     status: SegmentStatus
@@ -614,6 +599,18 @@ export default function Tai8LeafletMap({
 
   useEffect(() => {
     const map = leafletMapRef.current
+    if (!map) return
+    const handlePopupOpen = () => {
+      setSelectedSegment(null)
+    }
+    map.on("popupopen", handlePopupOpen)
+    return () => {
+      map.off("popupopen", handlePopupOpen)
+    }
+  }, [mapReady])
+
+  useEffect(() => {
+    const map = leafletMapRef.current
     const L = leafletNSRef.current
     if (!mapReady || !map || !L) return
 
@@ -640,7 +637,7 @@ export default function Tai8LeafletMap({
 
     if (!map.getPane("segmentLabelPane")) {
       const p = map.createPane("segmentLabelPane")
-      p.style.zIndex = "800"
+      p.style.zIndex = "900"
     }
 
     const addPointLabel = (name: string, lat: number, lng: number) => {
@@ -721,7 +718,8 @@ export default function Tai8LeafletMap({
 
       line.on("click", () => {
         const label = segmentLabel(props)
-        setSelectedSegment({ label, blockCount, status: stat.status, info: props.info })
+        setSelectedSegment({ key, label, blockCount, status: stat.status, info: props.info })
+        leafletMapRef.current?.closePopup()
       })
       line.on("mouseover", () => line.setStyle({ weight: 6 }))
       line.on("mouseout", () => line.setStyle({ weight: 4 }))
@@ -941,10 +939,12 @@ export default function Tai8LeafletMap({
 
       {/* 路段詳情彈窗 */}
       {selectedSegment && (
-        <div className="absolute left-1/2 top-1/2 z-[600] w-80 -translate-x-1/2 -translate-y-1/2">
-          <div className="rounded-lg border-2 border-slate-300 bg-white p-4 shadow-2xl">
-            <div className="mb-3 flex items-start justify-between">
-              <div className="text-base font-semibold text-slate-900">{selectedSegment.label}</div>
+        <>
+          <div className="absolute inset-0 z-[1100] bg-black/20" />
+          <div className="absolute left-1/2 top-1/2 z-[1200] w-80 -translate-x-1/2 -translate-y-1/2">
+            <div className="rounded-lg border-2 border-slate-300 bg-white shadow-2xl">
+            <div className="flex items-start justify-between px-4 pb-2 pt-4">
+              <div className="text-base font-semibold text-slate-900">路段資訊</div>
               <button
                 type="button"
                 onClick={() => setSelectedSegment(null)}
@@ -954,35 +954,30 @@ export default function Tai8LeafletMap({
               </button>
             </div>
 
-            <div className="mb-2 flex items-center gap-2">
-              <span className="font-medium text-slate-600">狀態：</span>
-              <span
-                className={
-                  selectedSegment.status === "fully_blocked"
-                    ? "font-semibold text-red-600"
-                    : selectedSegment.status === "partially_blocked"
-                      ? "font-semibold text-orange-500"
-                      : "font-semibold text-green-600"
+            <div className="mx-4 border-t border-dashed border-slate-200" />
+
+            <div className="mx-4 mt-3 flex items-center gap-2 rounded bg-sky-100 px-3 py-2">
+              <img className="h-4 w-4" src="/icons/tai8_icon.png" alt="tai8" />
+              <div className="text-sm font-semibold text-slate-900">台八線 · {selectedSegment.label}</div>
+            </div>
+
+            <div className="mx-4 mb-4 mt-3 max-h-36 overflow-y-auto pr-1 text-sm text-slate-500">
+              {(() => {
+                const bucket = segmentBuckets[selectedSegment.key]
+                const points = bucket ? [...bucket.fully, ...bucket.partially] : []
+                if (points.length === 0) {
+                  return <div className="pl-2">此路段目前無中斷點資訊</div>
                 }
-              >
-                {selectedSegment.status === "fully_blocked"
-                  ? "⛔ 完全阻斷"
-                  : selectedSegment.status === "partially_blocked"
-                    ? "⚠️ 部分阻斷"
-                    : "✓ 通行順暢"}
-              </span>
+                return points.map((p) => (
+                  <div key={p.id} className="pl-2">
+                    {formatBlockageDetail(p.label, p.status)}
+                  </div>
+                ))
+              })()}
             </div>
-
-            <div className="text-sm text-slate-700">
-              <span className="font-medium text-slate-600">道路中斷數量：</span>
-              <span className="font-semibold">{selectedSegment.blockCount}</span>
             </div>
-
-            {selectedSegment.info && (
-              <div className="mt-3 border-t border-slate-200 pt-3 text-sm text-slate-700">{selectedSegment.info}</div>
-            )}
           </div>
-        </div>
+        </>
       )}
 
     </div>
