@@ -91,7 +91,7 @@ function segmentKey(p: SegmentProps): string {
 function segmentLabel(p: SegmentProps): string {
   const fa = p.from_name ? String(p.from_name).trim() : ""
   const fb = p.to_name ? String(p.to_name).trim() : ""
-  if (fa && fb) return fa + " → " + fb
+  if (fa && fb) return fa + " - " + fb
   return segmentKey(p)
 }
 
@@ -743,6 +743,25 @@ export default function Tai8LeafletMap({
       })
     }
 
+    const popupHtml = (bucketLabel: string, text: string) => `
+      <div class="seg-pop">
+        <div class="seg-pop__title">路段資訊</div>
+
+        <div class="seg-pop__divider"></div>
+
+        <div class="seg-pop__actions">
+          <a class="seg-pop__more" href="javascript:void(0)">查看詳情 >></a>
+        </div>
+
+        <div class="seg-pop__item">
+          <img class="seg-pop__icon" src="/icons/tai8_icon.png" alt="tai8" />
+          <div class="seg-pop__text">
+            台八線 · ${bucketLabel ? `${bucketLabel} ` : ""}${text}
+          </div>
+        </div>
+      </div>
+    `
+
     if (useAggregate) {
       Object.values(segmentBuckets).forEach((bucket) => {
         const fullyCount = showFullyBlocked ? bucket.fully.length : 0
@@ -752,22 +771,24 @@ export default function Tai8LeafletMap({
         if (fullyCount > 0) {
           const [lat, lng] = offsetLatLng(bucket.center.lat, bucket.center.lng, -18, 0)
           const marker = L.marker([lat, lng], { icon: createIcon("fully_blocked", fullyCount) }).addTo(layer)
-          const label = bucket.label ? `${bucket.label} - ` : ""
-          marker.bindTooltip(`${label}完全阻斷 ${fullyCount} 處`, {
-            direction: "top",
+          marker.bindPopup(popupHtml(bucket.label, `路段完全阻斷 ${fullyCount} 處`), {
+            closeButton: true,            // ✅ 右上角 X
+            autoClose: true,
+            closeOnClick: true,
             offset: L.point(0, -18),
-            opacity: 0.9,
+            className: "seg-pop-wrap",     // ✅ 方便你寫 CSS
           })
         }
 
         if (partiallyCount > 0) {
           const [lat, lng] = offsetLatLng(bucket.center.lat, bucket.center.lng, 18, 0)
           const marker = L.marker([lat, lng], { icon: createIcon("partially_blocked", partiallyCount) }).addTo(layer)
-          const label = bucket.label ? `${bucket.label} - ` : ""
-          marker.bindTooltip(`${label}部分阻斷 ${partiallyCount} 處`, {
-            direction: "top",
+          marker.bindPopup(popupHtml(bucket.label, `部分阻斷 ${partiallyCount} 處`), {
+            closeButton: true,
+            autoClose: true,
+            closeOnClick: true,
             offset: L.point(0, -18),
-            opacity: 0.9,
+            className: "seg-pop-wrap",
           })
         }
       })
@@ -958,6 +979,61 @@ export default function Tai8LeafletMap({
           line-height: 18px;
           text-align: center;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+        }
+        :global(.seg-pop) {
+          background: #fff;
+        }
+
+        :global(.seg-pop__title) {
+          padding: 10px 12px 8px 12px;
+          font-size: 14px;
+          font-weight: 700;
+          color: #111827;
+        }
+
+        :global(.seg-pop__divider) {
+          border-top: 1px dashed #e5e7eb; /* 分隔線 */
+          margin: 0 12px;
+        }
+
+        :global(.seg-pop__actions) {
+          padding: 6px 12px 8px 12px;
+          text-align: right; /* 置右 */
+        }
+
+        :global(.seg-pop__more) {
+          font-size: 12px;
+          font-weight: 700;
+          color: #f97316;
+          text-decoration: underline; /* 底線 */
+          text-underline-offset: 2px;
+        }
+
+        :global(.seg-pop__item) {
+          display: flex;
+          align-items: center;     /* ✅ icon+文字同一行 */
+          gap: 8px;
+          margin: 8px 10px 10px 10px;
+          padding: 8px 10px;
+          background: #dbeafe;     /* ✅ 淺藍底 */
+          border-radius: 4px;
+        }
+
+        :global(.seg-pop__icon) {
+          width: 18px;
+          height: 18px;
+          object-fit: contain;
+          flex: 0 0 auto;
+        }
+
+        :global(.seg-pop__text) {
+          font-size: 13px;
+          font-weight: 700;
+          color: #111827;
+          line-height: 1.2;
+          white-space: nowrap;       /* 可選：不換行 */
+          overflow: hidden;          /* 可選 */
+          text-overflow: ellipsis;   /* 可選：太長變 ... */
         }
       `}</style>
     </div>
