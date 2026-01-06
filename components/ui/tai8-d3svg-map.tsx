@@ -45,8 +45,8 @@ const colorByStatus = (s: SegmentStatus) =>
 
 async function fetchTai8Subsegments(): Promise<SegmentFeature[]> {
   try {
-    const res = await fetch("/geo/tai8_subsegments.geo.json", { cache: "no-store" })
-    if (!res.ok) throw new Error(`Failed to load /geo/tai8_subsegments.geo.json: ${res.status}`)
+    const res = await fetch("/geo/tai8_subsegments_v2.geo.json", { cache: "no-store" })
+    if (!res.ok) throw new Error(`Failed to load /geo/tai8_subsegments_v2.geo.json: ${res.status}`)
     const json = await res.json()
 
     if (json?.type !== "FeatureCollection" || !Array.isArray(json?.features)) {
