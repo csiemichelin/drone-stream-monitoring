@@ -9,7 +9,7 @@ import { dataStore } from "@/lib/store"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ListTodo, Radio, Bell, AlertTriangle } from "lucide-react"
+import { ListTodo, Radio, Bell, AlertTriangle, Layers } from "lucide-react"
 
 const Tai8D3SvgMap = dynamic(() => import("@/components/ui/tai8-d3svg-map"), {
   ssr: false,
@@ -234,7 +234,10 @@ export default function OverviewPage() {
                 <div className="grid grid-cols-1 md:grid-cols-6 h-full">
                   {/* Filters panel */}
                   <div className="p-4 border-b md:border-b-0 md:border-r bg-white/90 space-y-3 flex flex-col h-full">
-                    <p className="text-xs font-semibold text-muted-foreground">Filters</p>
+                    <div className="-mx-4 -mt-4 mb-3 flex items-center gap-2 bg-sky-700 px-4 py-2 text-xs font-semibold text-white">
+                      <Layers className="h-4 w-4" />
+                      <span>資訊篩選</span>
+                    </div>
                     <div className="space-y-2 text-xs text-muted-foreground">
                       <label className="flex items-center gap-2 cursor-pointer select-none">
                         <input
