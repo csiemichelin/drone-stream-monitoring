@@ -240,9 +240,19 @@ export default function Tai8LeafletMap({
         if (!L) return
         leafletNSRef.current = L
 
+        const taiwanBounds = L.latLngBounds(
+          [21.6, 119.0],
+          [25.6, 123.8]
+        )
+
+        const MIN_ZOOM = 8 // 最小縮放門檻(數字越小越「遠」)
         const map = L.map(mapRef.current!, {
           center: [24.2213889, 121.3086],
-          zoom: 12,
+          zoom: 15,
+          minZoom: MIN_ZOOM, // 不能再往下縮小
+          maxBounds: taiwanBounds,        // ✅ 只能在這個範圍內
+          maxBoundsViscosity: 1.0,        // ✅ 黏住邊界（不會被拖出去）
+          worldCopyJump: false,           // ✅ 避免世界重複跳躍造成視覺位移
           zoomControl: true,
         })
 
@@ -262,7 +272,6 @@ export default function Tai8LeafletMap({
         const satelliteLayer = L.tileLayer(
           "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
           {
-            maxZoom: 20,
             attribution: "© Google",
             errorTileUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", // 透明圖片
           }
@@ -272,13 +281,11 @@ export default function Tai8LeafletMap({
         const satelliteLayerAlt = L.tileLayer(
           "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
           {
-            maxZoom: 18,
             attribution: "© Esri, Maxar, Earthstar Geographics",
           }
         )
 
         const osmLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 19,
           attribution: "© OpenStreetMap",
         })
 
