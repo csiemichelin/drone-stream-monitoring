@@ -124,7 +124,7 @@ export default function OverviewPage() {
             </span>
           </CardHeader>
           <CardContent className="pb-2">
-            <div className="text-3xl font-bold text-warning">{openAlerts}</div>
+            <div className="text-3xl font-bold text-warning">{48}</div>
             <div className="mt-1 flex items-center justify-between gap-3">
               <p className="text-xs text-muted-foreground">筆異常偵測警示（含中、高風險）</p>
               <Link
@@ -146,7 +146,7 @@ export default function OverviewPage() {
             </span>
           </CardHeader>
           <CardContent className="pb-2">
-            <div className="text-3xl font-bold text-destructive">{criticalAlerts}</div>
+            <div className="text-3xl font-bold text-destructive">{23}</div>
             <div className="mt-1 flex items-center justify-between gap-3">
               <p className="text-xs text-muted-foreground">筆高風險警示，需立即處理</p>
               <Link
