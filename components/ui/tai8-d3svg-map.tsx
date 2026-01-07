@@ -645,7 +645,7 @@ export default function Tai8LeafletMap({
 
     if (!map.getPane("segmentLabelPane")) {
       const p = map.createPane("segmentLabelPane")
-      p.style.zIndex = "900"
+      p.style.zIndex = "600"
     }
 
     const addPointLabel = (name: string, lat: number, lng: number) => {
