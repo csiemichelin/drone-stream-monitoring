@@ -71,6 +71,7 @@ export interface TaskMetrics {
   alertCountTotal: number
   alertCountByType: Record<string, number>
   lastAlertAt?: Date
+  alertPointIds?: string[]
 }
 
 export interface HistoryStream {
@@ -97,12 +98,14 @@ export interface Task {
 // Alert types
 export type AlertSeverity = "info" | "warn" | "critical"
 export type HazardType =
-  | "road_closure"
-  | "accident"
-  | "congestion"
   | "obstacle"
-  | "signal_loss"
-  | "stream_interrupt"
+  | "landslide"
+  | "rockfall"
+  | "road_collapse"
+  | "flooding"
+  | "bridge_damage"
+  | "tunnel_damage"
+  | "slope_failure"
   | "unknown"
 export type InterruptionLevel = "partial" | "full" | "none"
 export type AlertStatus = "open" | "ack" | "resolved"
@@ -120,12 +123,16 @@ export interface Alert {
   createdAt: Date
   severity: AlertSeverity
   hazardType: HazardType
+  disaster_type: string
   interruption: InterruptionLevel
   hasPeople: boolean
   hasVehicles: boolean
   reason: string
   description: string
   confidence: number
+  ai_summary: string
+  ai_reasoning: string
+  analysis_detail: string
   occurredAt: Date
   lat?: number
   lng?: number
@@ -142,12 +149,16 @@ export interface Alert {
 export interface VLMAnalysisResult {
   severity: AlertSeverity
   hazardType: HazardType
+  disaster_type: string
   interruption: InterruptionLevel
   hasPeople: boolean
   hasVehicles: boolean
   reason: string
   description: string
   confidence: number
+  ai_summary: string
+  ai_reasoning: string
+  analysis_detail: string
   occurredAt: Date
   lat?: number
   lng?: number

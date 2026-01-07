@@ -148,12 +148,14 @@ export default function AlertsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="road_closure">Road Closure</SelectItem>
-                <SelectItem value="accident">Accident</SelectItem>
-                <SelectItem value="congestion">Congestion</SelectItem>
                 <SelectItem value="obstacle">Obstacle</SelectItem>
-                <SelectItem value="signal_loss">Signal Loss</SelectItem>
-                <SelectItem value="stream_interrupt">Stream Interrupt</SelectItem>
+                <SelectItem value="landslide">Landslide</SelectItem>
+                <SelectItem value="rockfall">Rockfall</SelectItem>
+                <SelectItem value="road_collapse">Road Collapse</SelectItem>
+                <SelectItem value="flooding">Flooding</SelectItem>
+                <SelectItem value="bridge_damage">Bridge Damage</SelectItem>
+                <SelectItem value="tunnel_damage">Tunnel Damage</SelectItem>
+                <SelectItem value="slope_failure">Slope Failure</SelectItem>
               </SelectContent>
             </Select>
           </div>

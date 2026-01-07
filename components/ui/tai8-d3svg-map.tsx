@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import { BlockPoint, tai8BlockagePoints } from "@/lib/store"
+import { AlertPoint, tai8AlertPoints } from "@/lib/store"
 
 type SegmentStatus = "fully_blocked" | "partially_blocked" | "clear"
 
@@ -19,7 +19,7 @@ type GeoJSONLike = GeoJSON.FeatureCollection | GeoJSON.Feature
 
 type BaseMode = "satellite" | "osm" | "county"
 
-const BLOCKAGE_POINTS: BlockPoint[] = tai8BlockagePoints
+const ALERT_POINTS: AlertPoint[] = tai8AlertPoints
 
 function segmentKey(p: SegmentProps): string {
   const a = p.from_id ? String(p.from_id).trim() : ""
@@ -71,7 +71,7 @@ function pointToSegmentDistanceMeters(
   return Math.sqrt(dx * dx + dy * dy)
 }
 
-function matchSegmentKeyForPoint(segments: SegmentFeature[], point: BlockPoint): string {
+function matchSegmentKeyForPoint(segments: SegmentFeature[], point: AlertPoint): string {
   const label = String(point.label ?? "")
   for (const segment of segments) {
     const props = segment.properties || {}
@@ -107,8 +107,8 @@ function matchSegmentKeyForPoint(segments: SegmentFeature[], point: BlockPoint):
 type SegmentBucket = {
   center: { lat: number; lng: number }
   label: string
-  fully: BlockPoint[]
-  partially: BlockPoint[]
+  fully: AlertPoint[]
+  partially: AlertPoint[]
 }
 
 const AGGREGATE_ZOOM_THRESHOLD = 12
@@ -120,7 +120,7 @@ function segmentCenter(segment: SegmentFeature): { lat: number; lng: number } | 
   return { lat: mid[1], lng: mid[0] }
 }
 
-function computeSegmentBuckets(segments: SegmentFeature[], points: BlockPoint[]): Record<string, SegmentBucket> {
+function computeSegmentBuckets(segments: SegmentFeature[], points: AlertPoint[]): Record<string, SegmentBucket> {
   if (!segments || segments.length === 0) return {}
 
   const buckets: Record<string, SegmentBucket> = {}
@@ -157,7 +157,7 @@ function computeSegmentBuckets(segments: SegmentFeature[], points: BlockPoint[])
 
 type SegmentStat = { count: number; status: SegmentStatus }
 
-function computePointSegmentLabels(segments: SegmentFeature[], points: BlockPoint[]): Record<string, string> {
+function computePointSegmentLabels(segments: SegmentFeature[], points: AlertPoint[]): Record<string, string> {
   if (!segments || segments.length === 0) return {}
   const labels: Record<string, string> = {}
   const segmentByKey: Record<string, SegmentFeature> = {}
@@ -176,7 +176,7 @@ function computePointSegmentLabels(segments: SegmentFeature[], points: BlockPoin
   return labels
 }
 
-const formatBlockageDisplay = (label: string, status: BlockPoint["status"]) => {
+const formatBlockageDisplay = (label: string, status: AlertPoint["status"]) => {
   const match = label.match(/(\d+(?:\.\d+)?km=>\d+(?:\.\d+)?km)/)
   const place = match ? `${match[1]} 處` : `${label} 處`
   const statusText = status === "fully_blocked" ? "完全中斷" : "部分中斷"
@@ -184,14 +184,14 @@ const formatBlockageDisplay = (label: string, status: BlockPoint["status"]) => {
   return { place, statusText, statusClass }
 }
 
-function formatBlockageDetail(label: string, status: BlockPoint["status"]) {
+function formatBlockageDetail(label: string, status: AlertPoint["status"]) {
   const statusText = status === "fully_blocked" ? "完全中斷" : "部分中斷"
   const match = label.match(/(\d+(?:\.\d+)?km=>\d+(?:\.\d+)?km處)/)
   if (match) return `${match[1]}：${statusText}`
   return `${label}：${statusText}`
 }
 
-// ✅ 用 BLOCKAGE_POINTS 找出每個點最近的路段，並累積 count + status
+// ✅ 用 ALERT_POINTS 找出每個點最近的路段，並累積 count + status
 function computeSegmentStatsFromPoints(segments: SegmentFeature[]): Record<string, SegmentStat> {
   if (!segments || segments.length === 0) return {}
 
@@ -208,7 +208,7 @@ function computeSegmentStatsFromPoints(segments: SegmentFeature[]): Record<strin
     return "partially_blocked"
   }
 
-  BLOCKAGE_POINTS.forEach((p) => {
+  ALERT_POINTS.forEach((p) => {
     const nearestKey = matchSegmentKeyForPoint(segments, p)
     if (!nearestKey) return
     if (!stats[nearestKey]) stats[nearestKey] = { count: 0, status: "clear" }
@@ -295,8 +295,8 @@ export default function Tai8LeafletMap({
 
   const mode = mapMode ?? "county"
   const [taiwanGeo, setTaiwanGeo] = useState<GeoJSONLike | null>(null)
-  const segmentBuckets = useMemo(() => computeSegmentBuckets(segments, BLOCKAGE_POINTS), [segments])
-  const pointSegmentLabels = useMemo(() => computePointSegmentLabels(segments, BLOCKAGE_POINTS), [segments])
+  const segmentBuckets = useMemo(() => computeSegmentBuckets(segments, ALERT_POINTS), [segments])
+  const pointSegmentLabels = useMemo(() => computePointSegmentLabels(segments, ALERT_POINTS), [segments])
 
   useEffect(() => {
     let cancelled = false
@@ -317,7 +317,7 @@ export default function Tai8LeafletMap({
     }
   }, [])
 
-  // ✅ 依據 BLOCKAGE_POINTS 動態計算「每個路段」的 count + status
+  // ✅ 依據 ALERT_POINTS 動態計算「每個路段」的 count + status
   useEffect(() => {
     if (!segments || segments.length === 0) {
       setSegmentStats({})
@@ -652,7 +652,7 @@ export default function Tai8LeafletMap({
       const props = segment.properties || {}
       const key = segmentKey(props)
 
-      // ✅ 這裡不再用測試 SEGMENT_BLOCK_COUNT，改用 BLOCKAGE_POINTS 動態算出來的 segmentStats
+      // ✅ 這裡不再用測試 SEGMENT_BLOCK_COUNT，改用 ALERT_POINTS 動態算出來的 segmentStats
       const stat = segmentStats[key] ?? { count: 0, status: "clear" }
       const blockCount = stat.count
       const color = colorByBlockCount(blockCount)
@@ -871,7 +871,7 @@ export default function Tai8LeafletMap({
         }
       })
     } else {
-      const filtered = BLOCKAGE_POINTS.filter((p) => {
+      const filtered = ALERT_POINTS.filter((p) => {
         if (p.status === "fully_blocked" && !showFullyBlocked) return false
         if (p.status === "partially_blocked" && !showPartiallyBlocked) return false
         return true
