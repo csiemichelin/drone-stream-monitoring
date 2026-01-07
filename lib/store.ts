@@ -113,42 +113,109 @@ class DataStore {
     }
     this.users.set(demoUser.id, demoUser)
 
-    // Create mock streams
-    this.streams.set("stream-1", {
-      id: "stream-1",
-      name: "Highway 101 North",
-      sourceType: "hls",
-      sourceUrl: "/sample-traffic.mp4",
-      status: "online",
-      lastSeenAt: new Date(),
-      stats: { fps: 30, latencyMs: 120, bitrateKbps: 2500 },
-      telemetry: { lat: 37.7749, lng: -122.4194, altitude: 50, heading: 180, speed: 0 },
-      tags: ["highway", "north"],
-    })
-
-    this.streams.set("stream-2", {
-      id: "stream-2",
-      name: "Downtown Intersection",
-      sourceType: "rtsp",
-      sourceUrl: "/sample-traffic-2.mp4",
-      status: "online",
-      lastSeenAt: new Date(),
-      stats: { fps: 25, latencyMs: 95, bitrateKbps: 2100 },
-      telemetry: { lat: 37.7849, lng: -122.4094, altitude: 30, heading: 90, speed: 0 },
-      tags: ["downtown", "intersection"],
-    })
-
-    this.streams.set("stream-3", {
-      id: "stream-3",
-      name: "Bridge Monitoring",
-      sourceType: "hls",
-      sourceUrl: "/sample-traffic.mp4",
-      status: "degraded",
-      lastSeenAt: new Date(Date.now() - 60000),
-      stats: { fps: 15, latencyMs: 250, bitrateKbps: 1200 },
-      telemetry: { lat: 37.8049, lng: -122.4294 },
-      tags: ["bridge"],
-    })
+    // Create mock streams (與台八線 9 路段 Task 一一對應：stream-1 ↔ task_1 ... stream-9 ↔ task_9)
+    const tai8Streams: Stream[] = [
+      {
+        id: "stream-1",
+        name: "東勢 - 天冷",
+        sourceType: "rtsp",
+        sourceUrl: "/sample-traffic.mp4",
+        status: "online",
+        lastSeenAt: new Date(),
+        stats: { fps: 25, latencyMs: 110, bitrateKbps: 2200 },
+        telemetry: { lat: 24.1843, lng: 120.9240, altitude: 120, heading: 90, speed: 0 },
+        tags: ["台八線", "東勢", "天冷"],
+      },
+      {
+        id: "stream-2",
+        name: "天冷 - 谷關",
+        sourceType: "rtsp",
+        sourceUrl: "/sample-traffic-2.mp4",
+        status: "online",
+        lastSeenAt: new Date(),
+        stats: { fps: 25, latencyMs: 95, bitrateKbps: 2100 },
+        telemetry: { lat: 24.1964, lng: 120.8390, altitude: 120, heading: 90, speed: 0 },
+        tags: ["台八線", "天冷", "谷關"],
+      },
+      {
+        id: "stream-3",
+        name: "谷關 - 德基",
+        sourceType: "rtsp",
+        sourceUrl: "/sample-traffic.mp4",
+        status: "online",
+        lastSeenAt: new Date(),
+        stats: { fps: 20, latencyMs: 140, bitrateKbps: 1800 },
+        telemetry: { lat: 24.2026, lng: 121.0033, altitude: 150, heading: 100, speed: 0 },
+        tags: ["台八線", "谷關", "德基"],
+      },
+      {
+        id: "stream-4",
+        name: "德基 - 梨山",
+        sourceType: "rtsp",
+        sourceUrl: "/sample-traffic-2.mp4",
+        status: "online",
+        lastSeenAt: new Date(),
+        stats: { fps: 22, latencyMs: 160, bitrateKbps: 1700 },
+        telemetry: { lat: 24.2511, lng: 121.1707, altitude: 160, heading: 110, speed: 0 },
+        tags: ["台八線", "德基", "梨山"],
+      },
+      {
+        id: "stream-5",
+        name: "梨山 - 大禹嶺",
+        sourceType: "rtsp",
+        sourceUrl: "/sample-traffic.mp4",
+        status: "online",
+        lastSeenAt: new Date(),
+        stats: { fps: 18, latencyMs: 190, bitrateKbps: 1500 },
+        telemetry: { lat: 24.2541, lng: 121.2529, altitude: 180, heading: 120, speed: 0 },
+        tags: ["台八線", "梨山", "大禹嶺"],
+      },
+      {
+        id: "stream-6",
+        name: "大禹嶺 - 關原",
+        sourceType: "rtsp",
+        sourceUrl: "/sample-traffic-2.mp4",
+        status: "online",
+        lastSeenAt: new Date(),
+        stats: { fps: 20, latencyMs: 130, bitrateKbps: 1600 },
+        telemetry: { lat: 24.1863, lng: 121.3267, altitude: 190, heading: 130, speed: 0 },
+        tags: ["台八線", "大禹嶺", "關原"],
+      },
+      {
+        id: "stream-7",
+        name: "關原 - 天祥",
+        sourceType: "rtsp",
+        sourceUrl: "/sample-traffic.mp4",
+        status: "online",
+        lastSeenAt: new Date(),
+        stats: { fps: 16, latencyMs: 220, bitrateKbps: 1200 },
+        telemetry: { lat: 24.1874, lng: 121.3324, altitude: 170, heading: 140, speed: 0 },
+        tags: ["台八線", "關原", "天祥"],
+      },
+      {
+        id: "stream-8",
+        name: "天祥 - 太魯閣",
+        sourceType: "rtsp",
+        sourceUrl: "/sample-traffic-2.mp4",
+        status: "degraded",
+        lastSeenAt: new Date(Date.now() - 60_000),
+        stats: { fps: 12, latencyMs: 280, bitrateKbps: 900 },
+        telemetry: { lat: 24.1706, lng: 121.5475, altitude: 140, heading: 150, speed: 0 },
+        tags: ["台八線", "天祥", "太魯閣"],
+      },
+      {
+        id: "stream-9",
+        name: "太魯閣 - 新城",
+        sourceType: "rtsp",
+        sourceUrl: "/sample-traffic.mp4",
+        status: "online",
+        lastSeenAt: new Date(),
+        stats: { fps: 24, latencyMs: 105, bitrateKbps: 2000 },
+        telemetry: { lat: 24.1639, lng: 121.6063, altitude: 120, heading: 160, speed: 0 },
+        tags: ["台八線", "太魯閣", "新城"],
+      },
+    ]
+    tai8Streams.forEach((s) => this.streams.set(s.id, s))
 
     // Create mock notification groups
     this.groups.set("group-1", {
@@ -240,7 +307,7 @@ class DataStore {
         startAt: new Date(Date.now() - 3.6 * 60 * 60 * 1000),
         createdBy: "user-demo",
         createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
-        boundStreamIds: ["stream-1", "stream-3"],
+        boundStreamIds: ["stream-3"],
         notifyGroupIds: ["group-1", "group-3"],
         metrics: {
           alertCountTotal: 7,
@@ -261,7 +328,7 @@ class DataStore {
         startAt: new Date(Date.now() - 4.8 * 60 * 60 * 1000),
         createdBy: "user-demo",
         createdAt: new Date(Date.now() - 5.2 * 60 * 60 * 1000),
-        boundStreamIds: ["stream-2"],
+        boundStreamIds: ["stream-4"],
         notifyGroupIds: ["group-2"],
         metrics: {
           alertCountTotal: 7,
@@ -279,7 +346,7 @@ class DataStore {
         startAt: new Date(Date.now() - 6.1 * 60 * 60 * 1000),
         createdBy: "user-demo",
         createdAt: new Date(Date.now() - 6.6 * 60 * 60 * 1000),
-        boundStreamIds: ["stream-3"],
+        boundStreamIds: ["stream-5"],
         notifyGroupIds: ["group-2", "group-3"],
         metrics: {
           alertCountTotal: 7,
@@ -297,7 +364,7 @@ class DataStore {
         startAt: new Date(Date.now() - 1.0 * 60 * 60 * 1000),
         createdBy: "user-demo",
         createdAt: new Date(Date.now() - 1.1 * 60 * 60 * 1000),
-        boundStreamIds: ["stream-1"],
+        boundStreamIds: ["stream-6"],
         notifyGroupIds: ["group-1"],
         metrics: {
           alertCountTotal: 0,
@@ -315,7 +382,7 @@ class DataStore {
         startAt: new Date(Date.now() - 3.0 * 60 * 60 * 1000),
         createdBy: "user-demo",
         createdAt: new Date(Date.now() - 3.2 * 60 * 60 * 1000),
-        boundStreamIds: ["stream-2"],
+        boundStreamIds: ["stream-7"],
         notifyGroupIds: ["group-3"],
         metrics: {
           alertCountTotal: 6,
@@ -333,7 +400,7 @@ class DataStore {
         startAt: new Date(Date.now() - 5.5 * 60 * 60 * 1000),
         createdBy: "user-demo",
         createdAt: new Date(Date.now() - 6.0 * 60 * 60 * 1000),
-        boundStreamIds: ["stream-3"],
+        boundStreamIds: ["stream-8"],
         notifyGroupIds: ["group-2"],
         metrics: {
           alertCountTotal: 5,
@@ -351,7 +418,7 @@ class DataStore {
         startAt: new Date(Date.now() - 0.8 * 60 * 60 * 1000),
         createdBy: "user-demo",
         createdAt: new Date(Date.now() - 0.9 * 60 * 60 * 1000),
-        boundStreamIds: ["stream-2"],
+        boundStreamIds: ["stream-9"],
         notifyGroupIds: ["group-1", "group-3"],
         metrics: {
           alertCountTotal: 0,

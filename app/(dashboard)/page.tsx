@@ -49,6 +49,11 @@ export default function OverviewPage() {
   const runningTaskList = useMemo(() => tasks.filter((t) => t.status === "running").slice(0, 6), [tasks])
   const activeStreams = useMemo(() => streams.filter((s) => s.status === "online").slice(0, 4), [streams])
 
+  const MAX_VISIBLE_TASKS = 2
+  const MAX_VISIBLE_STREAMS = 2
+  const visibleTasks = runningTaskList.slice(0, MAX_VISIBLE_TASKS)
+  const visibleStreams = activeStreams.slice(0, MAX_VISIBLE_STREAMS)
+
   const [showFullyBlocked, setShowFullyBlocked] = useState(true)
   const [showPartiallyBlocked, setShowPartiallyBlocked] = useState(true)
   const [showWeather, setShowWeather] = useState(true)
@@ -164,86 +169,98 @@ export default function OverviewPage() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 flex-1 min-h-0">
         {/* Left column */}
         <div className="lg:col-span-1 flex flex-col space-y-4">
-          <Card className="flex-1">
+          <Card className="flex-1 flex flex-col">
             <CardHeader>
               <CardTitle className="text-base font-medium text-foreground/75">巡檢任務</CardTitle>
               <CardDescription className="text-xs text-foreground/60">任務執行中</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {runningTaskList.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">目前沒有進行中任務</p>
-              ) : (
-                runningTaskList.map((task) => (
-                  <Link key={task.id} href={`/tasks/${task.id}`}>
-                    <div className="p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm font-medium truncate">{task.name}</p>
-                        <Badge variant="default" className="text-[10px]">
-                          Running
-                        </Badge>
+
+            <CardContent className="flex-1 flex flex-col min-h-0">
+              {/* 列表區：用 gap 形成間距 */}
+              <div className="flex flex-col gap-3">
+                {visibleTasks.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">目前沒有進行中任務</p>
+                ) : (
+                  visibleTasks.map((task) => (
+                    <Link key={task.id} href={`/tasks/${task.id}`}>
+                      <div className="p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-medium truncate">{task.name}</p>
+                          <Badge variant="default" className="text-[10px]">Running</Badge>
+                        </div>
+
+                        <p className="text-xs text-muted-foreground line-clamp-2 pt-2">
+                          {task.description || "No description"}
+                        </p>
+
+                        <p className="text-[11px] text-muted-foreground mt-1">
+                          開始時間：{task.startAt ? new Date(task.startAt).toLocaleString() : "N/A"}
+                        </p>
                       </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2">{task.description || "No description"}</p>
-                      <p className="text-[11px] text-muted-foreground mt-1">
-                        Started: {task.startAt ? new Date(task.startAt).toLocaleString() : "N/A"}
-                      </p>
-                    </div>
-                  </Link>
-                ))
-              )}
-              <Link href="/tasks">
-                <Button variant="outline" className="w-full mt-1 bg-transparent">
+                    </Link>
+                  ))
+                )}
+              </div>
+
+              {/* View All 固定在底部 */}
+              <Link href="/tasks" className="mt-3">
+                <Button variant="outline" className="w-full bg-transparent">
                   View All Tasks
                 </Button>
               </Link>
             </CardContent>
           </Card>
 
-          <Card className="flex-1">
+          <Card className="flex-1 flex flex-col">
             <CardHeader>
               <CardTitle>Active Streams</CardTitle>
               <CardDescription>Currently online</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {activeStreams.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No active streams</p>
-              ) : (
-                activeStreams.map((stream) => (
-                  <Link key={stream.id} href={`/streams/${stream.id}`}>
-                    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer">
-                      <div className="relative w-16 h-10 bg-muted rounded overflow-hidden shrink-0">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <Radio className="h-5 w-5 text-muted-foreground" />
+
+            <CardContent className="flex-1 flex flex-col min-h-0">
+              <div className="flex flex-col gap-3">
+                {visibleStreams.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No active streams</p>
+                ) : (
+                  visibleStreams.map((stream) => (
+                    <Link key={stream.id} href={`/streams/${stream.id}`}>
+                      <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer">
+                        <div className="relative w-16 h-10 bg-muted rounded overflow-hidden shrink-0">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Radio className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                          {stream.status === "online" && (
+                            <Badge className="absolute top-1 left-1 text-[10px] bg-success live-pulse" variant="default">
+                              LIVE
+                            </Badge>
+                          )}
                         </div>
-                        {stream.status === "online" && (
-                          <Badge className="absolute top-1 left-1 text-[10px] bg-success live-pulse" variant="default">
-                            LIVE
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{stream.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {stream.telemetry.lat?.toFixed(4)}, {stream.telemetry.lng?.toFixed(4)}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-muted-foreground">{stream.stats.fps}fps</span>
-                          <span className="text-xs text-muted-foreground">|</span>
-                          <span className="text-xs text-muted-foreground">{stream.stats.latencyMs}ms</span>
+
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{stream.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {stream.telemetry.lat?.toFixed(4)}, {stream.telemetry.lng?.toFixed(4)}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-muted-foreground">{stream.stats.fps}fps</span>
+                            <span className="text-xs text-muted-foreground">|</span>
+                            <span className="text-xs text-muted-foreground">{stream.stats.latencyMs}ms</span>
+                          </div>
                         </div>
+
+                        <Badge
+                          variant={stream.status === "online" ? "default" : stream.status === "degraded" ? "outline" : "secondary"}
+                        >
+                          {stream.status}
+                        </Badge>
                       </div>
-                      <Badge
-                        variant={
-                          stream.status === "online" ? "default" : stream.status === "degraded" ? "outline" : "secondary"
-                        }
-                      >
-                        {stream.status}
-                      </Badge>
-                    </div>
-                  </Link>
-                ))
-              )}
-              <Link href="/streams">
-                <Button variant="outline" className="w-full mt-1 bg-transparent">
+                    </Link>
+                  ))
+                )}
+              </div>
+
+              <Link href="/streams" className="mt-3">
+                <Button variant="outline" className="w-full bg-transparent">
                   View All Streams
                 </Button>
               </Link>
