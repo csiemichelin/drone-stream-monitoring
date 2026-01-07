@@ -67,24 +67,6 @@ export default function StreamDetailPage() {
     console.log("[v0] Captured screenshot:", dataUrl.substring(0, 50))
   }
 
-  const handleAck = async (alertId: string) => {
-    await fetch(`/api/alerts/${alertId}/ack`, { method: "POST" })
-    // Refresh alerts
-    const res = await fetch(`/api/alerts?streamId=${streamId}`)
-    const data = await res.json()
-    setAlerts(data.alerts || [])
-    toast({ title: "Alert acknowledged" })
-  }
-
-  const handleResolve = async (alertId: string) => {
-    await fetch(`/api/alerts/${alertId}/resolve`, { method: "POST" })
-    // Refresh alerts
-    const res = await fetch(`/api/alerts?streamId=${streamId}`)
-    const data = await res.json()
-    setAlerts(data.alerts || [])
-    toast({ title: "Alert resolved" })
-  }
-
   if (!stream) {
     return (
       <div className="p-6">
@@ -161,12 +143,7 @@ export default function StreamDetailPage() {
       {/* Right Sidebar - Inspector (after video on mobile) */}
       <div className="order-2 w-full lg:order-3 lg:w-96 lg:border-l bg-card">
         <div className="p-4 lg:h-full">
-          <InspectorPanel
-            alerts={alerts}
-            latestAnalysis={latestAnalysis}
-            onAck={handleAck}
-            onResolve={handleResolve}
-          />
+          <InspectorPanel alerts={alerts} latestAnalysis={latestAnalysis} />
         </div>
       </div>
     </div>

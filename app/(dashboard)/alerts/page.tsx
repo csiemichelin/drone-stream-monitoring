@@ -3,27 +3,43 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { AlertTriangle, CheckCircle, Clock } from "lucide-react"
-import type { Alert } from "@/lib/types"
+import { AlertTriangle, CheckCircle } from "lucide-react"
+import type { Alert, Stream, Task } from "@/lib/types"
 import Link from "next/link"
 
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>([])
-  const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [severityFilter, setSeverityFilter] = useState<string>("all")
+  const [riskFilter, setRiskFilter] = useState<string>("all")
   const [hazardFilter, setHazardFilter] = useState<string>("all")
+  const [taskFilter, setTaskFilter] = useState<string>("all")
+  const [streamFilter, setStreamFilter] = useState<string>("all")
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [streams, setStreams] = useState<Stream[]>([])
 
   useEffect(() => {
     fetchAlerts()
-  }, [statusFilter, severityFilter, hazardFilter])
+  }, [riskFilter, hazardFilter, taskFilter, streamFilter])
+
+  useEffect(() => {
+    fetch("/api/tasks")
+      .then((res) => res.json())
+      .then((data) => setTasks(data.tasks || []))
+      .catch(console.error)
+
+    fetch("/api/streams")
+      .then((res) => res.json())
+      .then((data) => setStreams(data.streams || []))
+      .catch(console.error)
+  }, [])
 
   const fetchAlerts = () => {
     const params = new URLSearchParams()
-    if (statusFilter !== "all") params.append("status", statusFilter)
-    if (severityFilter !== "all") params.append("severity", severityFilter)
+    if (riskFilter === "high") params.append("severity", "critical")
+    if (riskFilter === "medium") params.append("severity", "warn")
     if (hazardFilter !== "all") params.append("hazardType", hazardFilter)
+    if (taskFilter !== "all") params.append("taskId", taskFilter)
+    if (streamFilter !== "all") params.append("streamId", streamFilter)
 
     fetch(`/api/alerts?${params}`)
       .then((res) => res.json())
@@ -31,22 +47,10 @@ export default function AlertsPage() {
       .catch(console.error)
   }
 
-  const handleAck = async (alertId: string) => {
-    await fetch(`/api/alerts/${alertId}/ack`, { method: "POST" })
-    fetchAlerts()
-  }
-
-  const handleResolve = async (alertId: string) => {
-    await fetch(`/api/alerts/${alertId}/resolve`, { method: "POST" })
-    fetchAlerts()
-  }
-
   const stats = {
     total: alerts.length,
-    open: alerts.filter((a) => a.status === "open").length,
-    ack: alerts.filter((a) => a.status === "ack").length,
-    resolved: alerts.filter((a) => a.status === "resolved").length,
-    critical: alerts.filter((a) => a.severity === "critical").length,
+    full: alerts.filter((a) => a.interruption === "full").length,
+    partial: alerts.filter((a) => a.interruption === "partial").length,
   }
 
   return (
@@ -57,7 +61,7 @@ export default function AlertsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total</CardTitle>
@@ -69,37 +73,19 @@ export default function AlertsPage() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Open</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Full Interruptions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-destructive">{stats.open}</div>
+            <div className="text-3xl font-bold text-destructive">{stats.full}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Acknowledged</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Partial Interruptions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-warning">{stats.ack}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Resolved</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-success">{stats.resolved}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Critical</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-destructive">{stats.critical}</div>
+            <div className="text-3xl font-bold text-warning">{stats.partial}</div>
           </CardContent>
         </Card>
       </div>
@@ -111,31 +97,15 @@ export default function AlertsPage() {
         </CardHeader>
         <CardContent className="flex flex-wrap gap-4">
           <div className="flex items-center gap-2">
-            <label className="text-sm text-muted-foreground">Status:</label>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <label className="text-sm text-muted-foreground">Risk:</label>
+            <Select value={riskFilter} onValueChange={setRiskFilter}>
               <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
-                <SelectItem value="open">Open</SelectItem>
-                <SelectItem value="ack">Acknowledged</SelectItem>
-                <SelectItem value="resolved">Resolved</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-muted-foreground">Severity:</label>
-            <Select value={severityFilter} onValueChange={setSeverityFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="critical">Critical</SelectItem>
-                <SelectItem value="warn">Warning</SelectItem>
-                <SelectItem value="info">Info</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -160,18 +130,56 @@ export default function AlertsPage() {
             </Select>
           </div>
 
-          {(statusFilter !== "all" || severityFilter !== "all" || hazardFilter !== "all") && (
-            <Button
-              variant="ghost"
-              size="sm"
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-muted-foreground">Task:</label>
+            <Select value={taskFilter} onValueChange={setTaskFilter}>
+              <SelectTrigger className="w-56">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Tasks</SelectItem>
+                {tasks.map((task) => (
+                  <SelectItem key={task.id} value={task.id}>
+                    {task.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-muted-foreground">Stream:</label>
+            <Select value={streamFilter} onValueChange={setStreamFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Streams</SelectItem>
+                {streams.map((stream) => (
+                  <SelectItem key={stream.id} value={stream.id}>
+                    {stream.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {(riskFilter !== "all" ||
+            hazardFilter !== "all" ||
+            taskFilter !== "all" ||
+            streamFilter !== "all") && (
+            <button
+              type="button"
+              className="text-sm text-muted-foreground hover:text-foreground"
               onClick={() => {
-                setStatusFilter("all")
-                setSeverityFilter("all")
+                setRiskFilter("all")
                 setHazardFilter("all")
+                setTaskFilter("all")
+                setStreamFilter("all")
               }}
             >
               Clear Filters
-            </Button>
+            </button>
           )}
         </CardContent>
       </Card>
@@ -199,13 +207,7 @@ export default function AlertsPage() {
                           : "text-muted-foreground"
                     }`}
                   >
-                    {alert.status === "resolved" ? (
-                      <CheckCircle className="h-6 w-6" />
-                    ) : alert.status === "ack" ? (
-                      <Clock className="h-6 w-6" />
-                    ) : (
-                      <AlertTriangle className="h-6 w-6" />
-                    )}
+                    <AlertTriangle className="h-6 w-6" />
                   </div>
 
                   <div className="flex-1 space-y-3">
@@ -223,7 +225,6 @@ export default function AlertsPage() {
                         {alert.severity}
                       </Badge>
                       <Badge variant="outline">{alert.hazardType.replace(/_/g, " ")}</Badge>
-                      <Badge variant={alert.status === "open" ? "default" : "secondary"}>{alert.status}</Badge>
                       {alert.interruption !== "none" && (
                         <Badge variant={alert.interruption === "full" ? "destructive" : "outline"}>
                           {alert.interruption} interruption
@@ -267,24 +268,6 @@ export default function AlertsPage() {
                       </div>
                     )}
 
-                    {/* Actions */}
-                    {alert.status === "open" && (
-                      <div className="flex gap-2 pt-2">
-                        <Button size="sm" variant="outline" onClick={() => handleAck(alert.id)}>
-                          Acknowledge
-                        </Button>
-                        <Button size="sm" onClick={() => handleResolve(alert.id)}>
-                          Resolve
-                        </Button>
-                      </div>
-                    )}
-                    {alert.status === "ack" && (
-                      <div className="flex gap-2 pt-2">
-                        <Button size="sm" onClick={() => handleResolve(alert.id)}>
-                          Resolve
-                        </Button>
-                      </div>
-                    )}
                   </div>
 
                   {/* Snapshot */}

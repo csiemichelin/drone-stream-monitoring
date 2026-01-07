@@ -4,18 +4,15 @@ import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import type { Alert } from "@/lib/types"
 import type { VLMAnalysisResult } from "@/lib/types"
 
 interface InspectorPanelProps {
   alerts: Alert[]
   latestAnalysis?: VLMAnalysisResult
-  onAck?: (alertId: string) => void
-  onResolve?: (alertId: string) => void
 }
 
-export function InspectorPanel({ alerts, latestAnalysis, onAck, onResolve }: InspectorPanelProps) {
+export function InspectorPanel({ alerts, latestAnalysis }: InspectorPanelProps) {
   const [activeTab, setActiveTab] = useState("fields")
 
   return (
@@ -134,23 +131,10 @@ export function InspectorPanel({ alerts, latestAnalysis, onAck, onResolve }: Ins
                       >
                         {alert.severity}
                       </Badge>
-                      <Badge variant={alert.status === "open" ? "default" : "secondary"} className="text-xs">
-                        {alert.status}
-                      </Badge>
                     </div>
                     <p className="text-sm font-medium">{alert.hazardType.replace(/_/g, " ")}</p>
                     <p className="text-xs text-muted-foreground">{alert.description}</p>
                     <p className="text-xs text-muted-foreground">{new Date(alert.createdAt).toLocaleString()}</p>
-                    {alert.status === "open" && (
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline" onClick={() => onAck?.(alert.id)}>
-                          Acknowledge
-                        </Button>
-                        <Button size="sm" onClick={() => onResolve?.(alert.id)}>
-                          Resolve
-                        </Button>
-                      </div>
-                    )}
                   </div>
                 ))
               )}
