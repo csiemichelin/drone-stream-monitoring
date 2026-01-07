@@ -229,27 +229,6 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
             )}
           </CardContent>
         </Card>
-
-        {historyStreams.length > 0 && (
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Historical Streams</CardTitle>
-              <CardDescription>Previously attached streams and their active windows</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-muted-foreground">
-              {historyStreams.map((item) => (
-                <div key={`${item.streamId}-${item.startAt ?? ""}-${item.endAt ?? ""}`} className="flex items-center gap-3">
-                  <Radio className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium text-foreground">{item.stream?.name}</span>
-                  <span>
-                    {item.startAt ? new Date(item.startAt).toLocaleString() : "Unknown start"}{" "}
-                    {item.endAt ? `- ${new Date(item.endAt).toLocaleString()}` : "(active)"}
-                  </span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
       </div>
 
       {/* Alert History */}
