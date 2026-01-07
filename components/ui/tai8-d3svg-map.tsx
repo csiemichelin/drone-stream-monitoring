@@ -461,7 +461,7 @@ export default function Tai8LeafletMap({
         }
         if (!map.getPane("blockageHoverPane")) {  // ← 新增
           const blockageHoverPane = map.createPane("blockageHoverPane")
-          blockageHoverPane.style.zIndex = "650"  // 在路線上方
+          blockageHoverPane.style.zIndex = "650"  // 控制 hover 的 icon
         }
 
         leafletMapRef.current = map
@@ -645,7 +645,7 @@ export default function Tai8LeafletMap({
 
     if (!map.getPane("segmentLabelPane")) {
       const p = map.createPane("segmentLabelPane")
-      p.style.zIndex = "600"
+      p.style.zIndex = "600"  // 控制地點圓點
     }
 
     const addPointLabel = (name: string, lat: number, lng: number) => {
