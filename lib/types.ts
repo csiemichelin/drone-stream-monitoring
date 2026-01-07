@@ -128,6 +128,8 @@ export interface Alert {
   description: string
   confidence: number
   occurredAt: Date
+  lat?: number
+  lng?: number
   snapshotUrl?: string
   snapshotBase64?: string
   analysisRaw: any

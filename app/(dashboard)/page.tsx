@@ -213,8 +213,8 @@ export default function OverviewPage() {
 
           <Card className="flex-1 flex flex-col">
             <CardHeader>
-              <CardTitle>Active Streams</CardTitle>
-              <CardDescription>Currently online</CardDescription>
+              <CardTitle className="text-base font-medium text-foreground/75">即時影像串流</CardTitle>
+              <CardDescription className="text-xs text-foreground/60">目前在線</CardDescription>
             </CardHeader>
 
             <CardContent className="flex-1 flex flex-col min-h-0">

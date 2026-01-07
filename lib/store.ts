@@ -431,15 +431,13 @@ class DataStore {
 
     tai8Tasks.forEach((t) => this.tasks.set(t.id, t))
 
-    // Create mock alerts (對應台八線任務：挑幾個「完全阻斷多」的做 Critical，「部分阻斷」做 Warn)
-    this.createMockAlert("tai8-task-dongshi-tianleng", "stream-1", "critical", "road_closure", 0.92, true, true)
-    this.createMockAlert("tai8-task-guguan-deji", "stream-3", "critical", "road_closure", 0.90, true, true)
-    this.createMockAlert("tai8-task-tianxiang-taroko", "stream-3", "critical", "road_closure", 0.89, true, true)
-
-    this.createMockAlert("tai8-task-tianleng-guguan", "stream-2", "warn", "obstacle", 0.72, false, true)
-    this.createMockAlert("tai8-task-deji-lishan", "stream-2", "warn", "obstacle", 0.70, false, false)
-    this.createMockAlert("tai8-task-guanyuan-tianxiang", "stream-2", "warn", "obstacle", 0.68, false, false)
-
+    // Create mock alerts directly from BlockPoint 測試資料
+    const streamPool = ["stream-1", "stream-2", "stream-3"]
+    tai8BlockagePoints.forEach((bp, idx) => {
+      const taskId = tai8Tasks[idx % tai8Tasks.length].id
+      const streamId = streamPool[idx % streamPool.length]
+      this.createBlockageAlert(taskId, streamId, bp)
+    })
   }
 
   private createMockAlert(
@@ -482,6 +480,46 @@ class DataStore {
     }
 
     this.alerts.set(alertId, alert)
+  }
+
+  private createBlockageAlert(taskId: string, streamId: string, bp: BlockPoint) {
+    const hazardType: HazardType = bp.status === "fully_blocked" ? "road_closure" : "obstacle"
+    const severity: AlertSeverity = hazardType === "road_closure" ? "critical" : "warn"
+    const interruption: InterruptionLevel = hazardType === "road_closure" ? "full" : "partial"
+    const confidence = 0.65 + Math.random() * 0.25
+    const alertId = `alert-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    const task = this.tasks.get(taskId)
+
+    const alert: Alert = {
+      id: alertId,
+      taskId,
+      streamId,
+      createdAt: new Date(Date.now() - Math.random() * 60 * 60 * 1000),
+      severity,
+      hazardType,
+      interruption,
+      hasPeople: false,
+      hasVehicles: true,
+      reason: this.getHazardReason(hazardType),
+      description: `${bp.label} · ${bp.status === "fully_blocked" ? "完全中斷" : "部分中斷"}`,
+      confidence,
+      occurredAt: new Date(Date.now() - Math.random() * 60 * 60 * 1000),
+      snapshotUrl: `/placeholder.svg?height=180&width=320&query=${hazardType}+detection`,
+      analysisRaw: { model: "gpt-5-vision", confidence },
+      status: Math.random() > 0.7 ? "open" : "ack",
+      ackAt: Math.random() > 0.7 ? undefined : new Date(Date.now() - Math.random() * 30 * 60 * 1000),
+      notifications: task
+        ? task.notifyGroupIds.map((groupId) => ({
+            groupId,
+            sentAt: new Date(Date.now() - Math.random() * 60 * 60 * 1000),
+            channel: "demo-notification",
+          }))
+        : [],
+      lat: bp.lat,
+      lng: bp.lng,
+    }
+
+    this.createAlert(alert)
   }
 
   private getHazardReason(type: HazardType): string {
