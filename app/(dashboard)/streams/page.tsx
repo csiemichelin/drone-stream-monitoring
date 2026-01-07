@@ -2,10 +2,44 @@ import Link from "next/link"
 import { dataStore } from "@/lib/store"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 import { Radio, MapPin, Activity } from "lucide-react"
 
-export default function StreamsPage() {
+const PAGE_SIZE = 9
+
+function getPageItems(current: number, total: number) {
+  const items: Array<number | "ellipsis"> = []
+  if (total <= 7) {
+    for (let i = 1; i <= total; i += 1) items.push(i)
+    return items
+  }
+  items.push(1)
+  if (current > 3) items.push("ellipsis")
+  const start = Math.max(2, current - 1)
+  const end = Math.min(total - 1, current + 1)
+  for (let i = start; i <= end; i += 1) items.push(i)
+  if (current < total - 2) items.push("ellipsis")
+  items.push(total)
+  return items
+}
+
+export default function StreamsPage({ searchParams }: { searchParams?: { page?: string } }) {
   const streams = dataStore.getStreams()
+  const totalPages = Math.max(1, Math.ceil(streams.length / PAGE_SIZE))
+  const currentPage = Math.min(
+    totalPages,
+    Math.max(1, Number.parseInt(searchParams?.page ?? "1", 10) || 1),
+  )
+  const startIndex = (currentPage - 1) * PAGE_SIZE
+  const pagedStreams = streams.slice(startIndex, startIndex + PAGE_SIZE)
 
   return (
     <div className="p-6 space-y-6">
@@ -17,7 +51,7 @@ export default function StreamsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {streams.map((stream) => (
+        {pagedStreams.map((stream) => (
           <Link key={stream.id} href={`/streams/${stream.id}`}>
             <Card className="hover:shadow-md transition-shadow cursor-pointer overflow-hidden">
               <div className="relative aspect-video bg-muted">
@@ -95,6 +129,35 @@ export default function StreamsPage() {
             <p className="text-muted-foreground">No streams available</p>
           </CardContent>
         </Card>
+      )}
+
+      {streams.length > PAGE_SIZE && (
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span>
+            Showing {startIndex + 1}-{Math.min(startIndex + PAGE_SIZE, streams.length)} of {streams.length} streams
+          </span>
+          <Pagination className="justify-end">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious href={`?page=${Math.max(1, currentPage - 1)}`} />
+              </PaginationItem>
+              {getPageItems(currentPage, totalPages).map((item, index) => (
+                <PaginationItem key={`${item}-${index}`}>
+                  {item === "ellipsis" ? (
+                    <PaginationEllipsis />
+                  ) : (
+                    <PaginationLink href={`?page=${item}`} isActive={item === currentPage}>
+                      {item}
+                    </PaginationLink>
+                  )}
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext href={`?page=${Math.min(totalPages, currentPage + 1)}`} />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
       )}
     </div>
   )

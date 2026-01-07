@@ -2,12 +2,46 @@ import Link from "next/link"
 import { dataStore } from "@/lib/store"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 import { Plus, Star, Phone, Mail, MessageSquare, Users } from "lucide-react"
 
-export default function GroupsPage() {
+const PAGE_SIZE = 4
+
+function getPageItems(current: number, total: number) {
+  const items: Array<number | "ellipsis"> = []
+  if (total <= 7) {
+    for (let i = 1; i <= total; i += 1) items.push(i)
+    return items
+  }
+  items.push(1)
+  if (current > 3) items.push("ellipsis")
+  const start = Math.max(2, current - 1)
+  const end = Math.min(total - 1, current + 1)
+  for (let i = start; i <= end; i += 1) items.push(i)
+  if (current < total - 2) items.push("ellipsis")
+  items.push(total)
+  return items
+}
+
+export default function GroupsPage({ searchParams }: { searchParams?: { page?: string } }) {
   const groups = dataStore.getGroups()
-  const favoriteGroups = groups.filter((g) => g.favorite)
-  const otherGroups = groups.filter((g) => !g.favorite)
+  const totalPages = Math.max(1, Math.ceil(groups.length / PAGE_SIZE))
+  const currentPage = Math.min(
+    totalPages,
+    Math.max(1, Number.parseInt(searchParams?.page ?? "1", 10) || 1),
+  )
+  const startIndex = (currentPage - 1) * PAGE_SIZE
+  const pagedGroups = groups.slice(startIndex, startIndex + PAGE_SIZE)
+  const favoriteGroups = pagedGroups.filter((g) => g.favorite)
+  const otherGroups = pagedGroups.filter((g) => !g.favorite)
 
   return (
     <div className="p-6 space-y-6">
@@ -171,6 +205,35 @@ export default function GroupsPage() {
             </Link>
           </CardContent>
         </Card>
+      )}
+
+      {groups.length > PAGE_SIZE && (
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span>
+            Showing {startIndex + 1}-{Math.min(startIndex + PAGE_SIZE, groups.length)} of {groups.length} groups
+          </span>
+          <Pagination className="justify-end">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious href={`?page=${Math.max(1, currentPage - 1)}`} />
+              </PaginationItem>
+              {getPageItems(currentPage, totalPages).map((item, index) => (
+                <PaginationItem key={`${item}-${index}`}>
+                  {item === "ellipsis" ? (
+                    <PaginationEllipsis />
+                  ) : (
+                    <PaginationLink href={`?page=${item}`} isActive={item === currentPage}>
+                      {item}
+                    </PaginationLink>
+                  )}
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext href={`?page=${Math.min(totalPages, currentPage + 1)}`} />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
       )}
     </div>
   )

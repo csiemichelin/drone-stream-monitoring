@@ -4,9 +4,36 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 import { AlertTriangle, CheckCircle } from "lucide-react"
 import type { Alert, Stream, Task } from "@/lib/types"
 import Link from "next/link"
+
+const PAGE_SIZE = 8
+
+function getPageItems(current: number, total: number) {
+  const items: Array<number | "ellipsis"> = []
+  if (total <= 7) {
+    for (let i = 1; i <= total; i += 1) items.push(i)
+    return items
+  }
+  items.push(1)
+  if (current > 3) items.push("ellipsis")
+  const start = Math.max(2, current - 1)
+  const end = Math.min(total - 1, current + 1)
+  for (let i = start; i <= end; i += 1) items.push(i)
+  if (current < total - 2) items.push("ellipsis")
+  items.push(total)
+  return items
+}
 
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>([])
@@ -16,9 +43,14 @@ export default function AlertsPage() {
   const [streamFilter, setStreamFilter] = useState<string>("all")
   const [tasks, setTasks] = useState<Task[]>([])
   const [streams, setStreams] = useState<Stream[]>([])
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     fetchAlerts()
+  }, [riskFilter, hazardFilter, taskFilter, streamFilter])
+
+  useEffect(() => {
+    setPage(1)
   }, [riskFilter, hazardFilter, taskFilter, streamFilter])
 
   useEffect(() => {
@@ -52,6 +84,14 @@ export default function AlertsPage() {
     full: alerts.filter((a) => a.interruption === "full").length,
     partial: alerts.filter((a) => a.interruption === "partial").length,
   }
+  const totalPages = Math.max(1, Math.ceil(alerts.length / PAGE_SIZE))
+  const safePage = Math.min(totalPages, Math.max(1, page))
+  const startIndex = (safePage - 1) * PAGE_SIZE
+  const pagedAlerts = alerts.slice(startIndex, startIndex + PAGE_SIZE)
+
+  useEffect(() => {
+    if (page !== safePage) setPage(safePage)
+  }, [page, safePage])
 
   return (
     <div className="p-6 space-y-6">
@@ -194,7 +234,7 @@ export default function AlertsPage() {
             </CardContent>
           </Card>
         ) : (
-          alerts.map((alert) => (
+          pagedAlerts.map((alert) => (
             <Card key={alert.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
@@ -286,6 +326,54 @@ export default function AlertsPage() {
           ))
         )}
       </div>
+
+      {alerts.length > PAGE_SIZE && (
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span>
+            Showing {startIndex + 1}-{Math.min(startIndex + PAGE_SIZE, alerts.length)} of {alerts.length} alerts
+          </span>
+          <Pagination className="justify-end">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(event) => {
+                    event.preventDefault()
+                    setPage(Math.max(1, safePage - 1))
+                  }}
+                />
+              </PaginationItem>
+              {getPageItems(safePage, totalPages).map((item, index) => (
+                <PaginationItem key={`${item}-${index}`}>
+                  {item === "ellipsis" ? (
+                    <PaginationEllipsis />
+                  ) : (
+                    <PaginationLink
+                      href="#"
+                      isActive={item === safePage}
+                      onClick={(event) => {
+                        event.preventDefault()
+                        setPage(item)
+                      }}
+                    >
+                      {item}
+                    </PaginationLink>
+                  )}
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(event) => {
+                    event.preventDefault()
+                    setPage(Math.min(totalPages, safePage + 1))
+                  }}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </div>
   )
 }
