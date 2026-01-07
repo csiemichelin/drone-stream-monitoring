@@ -9,7 +9,7 @@ import { dataStore } from "@/lib/store"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ListTodo, Radio, Bell, AlertTriangle, Layers, CloudSun, HardHat } from "lucide-react"
+import { ListTodo, Radio, Bell, AlertTriangle, ArrowUpRight, Layers, CloudSun, HardHat } from "lucide-react"
 
 const Tai8D3SvgMap = dynamic(() => import("@/components/ui/tai8-d3svg-map"), {
   ssr: false,
@@ -74,53 +74,89 @@ export default function OverviewPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Active Tasks</CardTitle>
+            <CardTitle className="text-base font-medium text-muted-foreground">當前任務</CardTitle>
             <span className="h-9 w-9 rounded-full bg-primary/20 text-primary grid place-items-center shadow-sm">
               <ListTodo className="h-5 w-5" />
             </span>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pb-2">
             <div className="text-3xl font-bold text-primary">{runningTasks}</div>
-            <p className="text-xs text-muted-foreground mt-1">of {tasks.length} total tasks</p>
+            <div className="mt-1 flex items-center justify-between gap-3">
+              <p className="text-xs text-muted-foreground">筆巡檢任務執行中</p>
+              <Link
+                href="/tasks"
+                className="group inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-primary"
+              >
+                <span className="underline-offset-2 group-hover:underline">查看更多</span>
+                <ArrowUpRight className="h-4 w-4 transition-colors group-hover:text-primary" />
+              </Link>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Online Streams</CardTitle>
+            <CardTitle className="text-base font-medium text-muted-foreground">即時串流</CardTitle>
             <span className="h-9 w-9 rounded-full bg-success/20 text-success grid place-items-center shadow-sm">
               <Radio className="h-5 w-5" />
             </span>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pb-2">
             <div className="text-3xl font-bold text-success">{onlineStreams}</div>
-            <p className="text-xs text-muted-foreground mt-1">of {streams.length} total streams</p>
+            <div className="mt-1 flex items-center justify-between gap-3">
+              <p className="text-xs text-muted-foreground">路巡檢影像串流接收中</p>
+              <Link
+                href="/streams"
+                className="group inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-success"
+              >
+                <span className="underline-offset-2 group-hover:underline">查看更多</span>
+                <ArrowUpRight className="h-4 w-4 transition-colors group-hover:text-success" />
+              </Link>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Open Alerts</CardTitle>
+            <CardTitle className="text-base font-medium text-muted-foreground">異常偵測警示</CardTitle>
             <span className="h-9 w-9 rounded-full bg-warning/20 text-warning grid place-items-center shadow-sm">
               <Bell className="h-5 w-5" />
             </span>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pb-2">
             <div className="text-3xl font-bold text-warning">{openAlerts}</div>
-            <p className="text-xs text-muted-foreground mt-1">{alerts.length} total alerts</p>
+            <div className="mt-1 flex items-center justify-between gap-3">
+              <p className="text-xs text-muted-foreground">筆異常偵測警示（含中、高風險）</p>
+              <Link
+                href="/alerts"
+                className="group inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-warning"
+              >
+                <span className="underline-offset-2 group-hover:underline">查看更多</span>
+                <ArrowUpRight className="h-4 w-4 transition-colors group-hover:text-warning" />
+              </Link>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Critical Alerts</CardTitle>
+            <CardTitle className="text-base font-medium text-muted-foreground">高風險警示</CardTitle>
             <span className="h-9 w-9 rounded-full bg-destructive/20 text-destructive grid place-items-center shadow-sm">
               <AlertTriangle className="h-5 w-5" />
             </span>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pb-2">
             <div className="text-3xl font-bold text-destructive">{criticalAlerts}</div>
-            <p className="text-xs text-muted-foreground mt-1">require immediate attention</p>
+            <div className="mt-1 flex items-center justify-between gap-3">
+              <p className="text-xs text-muted-foreground">筆高風險警示，需立即處理</p>
+              <Link
+                href="/alerts"
+                className="group inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-destructive"
+              >
+                <span className="underline-offset-2 group-hover:underline">查看更多</span>
+                <ArrowUpRight className="h-4 w-4 transition-colors group-hover:text-destructive" />
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>
