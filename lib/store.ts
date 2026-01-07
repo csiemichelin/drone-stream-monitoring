@@ -278,7 +278,6 @@ class DataStore {
           lastAlertAt: new Date(Date.now() - 9 * 60 * 1000),
         },
         currentTelemetry: { lat: 24.19, lng: 120.90, altitude: 120 },
-        historyStreams: [{ streamId: "stream-1", startAt: new Date(Date.now() - 1.2 * 60 * 60 * 1000) }],
       },
 
       {
@@ -296,7 +295,6 @@ class DataStore {
           alertCountByType: { road_closure: 2, obstacle: 5 },
           lastAlertAt: new Date(Date.now() - 16 * 60 * 1000),
         },
-        historyStreams: [{ streamId: "stream-2", startAt: new Date(Date.now() - 2.3 * 60 * 60 * 1000) }],
       },
 
       {
@@ -314,10 +312,6 @@ class DataStore {
           alertCountByType: { road_closure: 5, obstacle: 2 },
           lastAlertAt: new Date(Date.now() - 7 * 60 * 1000),
         },
-        historyStreams: [
-          { streamId: "stream-1", startAt: new Date(Date.now() - 3.6 * 60 * 60 * 1000) },
-          { streamId: "stream-3", startAt: new Date(Date.now() - 2.8 * 60 * 60 * 1000) },
-        ],
       },
 
       {
@@ -335,7 +329,6 @@ class DataStore {
           alertCountByType: { road_closure: 3, obstacle: 4 },
           lastAlertAt: new Date(Date.now() - 28 * 60 * 1000),
         },
-        historyStreams: [{ streamId: "stream-2", startAt: new Date(Date.now() - 4.8 * 60 * 60 * 1000) }],
       },
 
       {
@@ -353,7 +346,6 @@ class DataStore {
           alertCountByType: { road_closure: 3, obstacle: 4 },
           lastAlertAt: new Date(Date.now() - 43 * 60 * 1000),
         },
-        historyStreams: [{ streamId: "stream-3", startAt: new Date(Date.now() - 6.1 * 60 * 60 * 1000) }],
       },
 
       {
@@ -371,7 +363,6 @@ class DataStore {
           alertCountByType: { road_closure: 0, obstacle: 0 },
           lastAlertAt: undefined,
         },
-        historyStreams: [{ streamId: "stream-1", startAt: new Date(Date.now() - 1.0 * 60 * 60 * 1000) }],
       },
 
       {
@@ -389,7 +380,6 @@ class DataStore {
           alertCountByType: { road_closure: 2, obstacle: 4 },
           lastAlertAt: new Date(Date.now() - 19 * 60 * 1000),
         },
-        historyStreams: [{ streamId: "stream-2", startAt: new Date(Date.now() - 3.0 * 60 * 60 * 1000) }],
       },
 
       {
@@ -407,7 +397,6 @@ class DataStore {
           alertCountByType: { road_closure: 3, obstacle: 2 },
           lastAlertAt: new Date(Date.now() - 33 * 60 * 1000),
         },
-        historyStreams: [{ streamId: "stream-3", startAt: new Date(Date.now() - 5.5 * 60 * 60 * 1000) }],
       },
 
       {
@@ -425,7 +414,6 @@ class DataStore {
           alertCountByType: { road_closure: 0, obstacle: 0 },
           lastAlertAt: undefined,
         },
-        historyStreams: [{ streamId: "stream-2", startAt: new Date(Date.now() - 0.8 * 60 * 60 * 1000) }],
       },
     ]
 

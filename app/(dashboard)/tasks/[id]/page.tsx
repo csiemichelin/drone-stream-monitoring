@@ -22,9 +22,6 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
   const groups = task.notifyGroupIds.map((gid) => dataStore.getGroup(gid)).filter(Boolean)
   const alerts = dataStore.getAlerts({ taskId: id })
   const recentAlerts = alerts.slice(0, 10)
-  const historyStreams = (task.historyStreams ?? [])
-    .map((h) => ({ ...h, stream: dataStore.getStream(h.streamId) }))
-    .filter((h) => h.stream)
 
   return (
     <div className="p-6 space-y-6">

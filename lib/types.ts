@@ -92,7 +92,6 @@ export interface Task {
   notifyGroupIds: string[]
   metrics: TaskMetrics
   currentTelemetry?: StreamTelemetry
-  historyStreams: HistoryStream[]
 }
 
 // Alert types

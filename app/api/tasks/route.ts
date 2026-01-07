@@ -37,8 +37,7 @@ export async function POST(request: Request) {
       metrics: {
         alertCountTotal: 0,
         alertCountByType: {},
-      },
-      historyStreams: [],
+      }
     }
 
     dataStore.createTask(task)

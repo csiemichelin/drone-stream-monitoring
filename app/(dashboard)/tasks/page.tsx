@@ -40,9 +40,6 @@ export default function TasksPage() {
           tasks.map((task) => {
             const streams = task.boundStreamIds.map((id) => dataStore.getStream(id)).filter(Boolean)
             const groups = task.notifyGroupIds.map((id) => dataStore.getGroup(id)).filter(Boolean)
-            const historyStreams = (task.historyStreams ?? [])
-              .map((h) => ({ ...h, stream: dataStore.getStream(h.streamId) }))
-              .filter((h) => h.stream)
 
             return (
               <Card key={task.id} className="hover:shadow-md transition-shadow">
@@ -114,37 +111,22 @@ export default function TasksPage() {
                   <div>
                     <p className="text-sm font-medium mb-2 text-muted-foreground">Bound Streams ({streams.length})</p>
                     <div className="flex flex-wrap gap-2">
-                      {streams.map((stream) => (
-                        <Link key={stream.id} href={`/streams/${stream.id}`}>
-                          <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-                            <Radio className="mr-1 h-3 w-3" />
-                            {stream.name}
-                          </Badge>
-                        </Link>
-                      ))}
+                      {streams.map((stream) => {
+                        const lastSeen = stream.lastSeenAt ? new Date(stream.lastSeenAt).toLocaleString() : "Unknown time"
+                        return (
+                          <Link key={stream.id} href={`/streams/${stream.id}`}>
+                            <Badge variant="outline" className="cursor-pointer hover:bg-accent">
+                              <Radio className="mr-1 h-3 w-3" />
+                              <span className="font-medium">{stream.name}</span>
+                              <span className="ml-1 text-[11px] text-muted-foreground">
+                                {lastSeen} (last seen)
+                              </span>
+                            </Badge>
+                          </Link>
+                        )
+                      })}
                     </div>
                   </div>
-
-                  {/* History Streams */}
-                  {historyStreams.length > 0 && (
-                    <div>
-                      <p className="text-sm font-medium mb-2 text-muted-foreground">
-                        Historical Streams ({historyStreams.length})
-                      </p>
-                      <div className="space-y-1 text-xs text-muted-foreground">
-                        {historyStreams.map((item) => (
-                          <div key={`${item.streamId}-${item.startAt ?? ""}-${item.endAt ?? ""}`} className="flex gap-2 items-center">
-                            <Radio className="h-3 w-3" />
-                            <span className="font-medium text-foreground">{item.stream?.name}</span>
-                            <span>
-                              {item.startAt ? new Date(item.startAt).toLocaleString() : "Unknown start"}{" "}
-                              {item.endAt ? `- ${new Date(item.endAt).toLocaleString()}` : "(active)"}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                   {/* Alert Metrics */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
