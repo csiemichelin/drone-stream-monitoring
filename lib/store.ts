@@ -193,82 +193,186 @@ class DataStore {
       createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
     })
 
-    // Create mock tasks
-    const task1: Task = {
-      id: "task-1",
-      name: "Highway 101 Morning Monitoring",
-      description: "Regular morning rush hour monitoring",
-      status: "running",
-      startAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      createdBy: "user-demo",
-      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      boundStreamIds: ["stream-1"],
-      notifyGroupIds: ["group-1", "group-2"],
-      metrics: {
-        alertCountTotal: 5,
-        alertCountByType: { accident: 1, congestion: 3, obstacle: 1 },
-        lastAlertAt: new Date(Date.now() - 5 * 60 * 1000),
-      },
-      currentTelemetry: { lat: 37.7749, lng: -122.4194, altitude: 50 },
-      historyStreams: [{ streamId: "stream-1", startAt: new Date(Date.now() - 2 * 60 * 60 * 1000) }],
-    }
-
-    const task2: Task = {
-      id: "task-2",
-      name: "Multi-Stream City Coverage",
-      description: "Comprehensive city-wide monitoring",
-      status: "running",
-      startAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
-      createdBy: "user-demo",
-      createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
-      boundStreamIds: ["stream-1", "stream-2", "stream-3"],
-      notifyGroupIds: ["group-1"],
-      metrics: {
-        alertCountTotal: 12,
-        alertCountByType: { accident: 2, congestion: 6, obstacle: 3, signal_loss: 1 },
-        lastAlertAt: new Date(Date.now() - 10 * 60 * 1000),
-      },
-      historyStreams: [
-        { streamId: "stream-1", startAt: new Date(Date.now() - 4 * 60 * 60 * 1000) },
-        { streamId: "stream-2", startAt: new Date(Date.now() - 4 * 60 * 60 * 1000) },
-        { streamId: "stream-3", startAt: new Date(Date.now() - 3 * 60 * 60 * 1000) },
-      ],
-    }
-
-    const task3: Task = {
-      id: "task-3",
-      name: "Bridge Safety Check",
-      description: "Scheduled safety inspection monitoring",
-      status: "ended",
-      startAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      endAt: new Date(Date.now() - 22 * 60 * 60 * 1000),
-      createdBy: "user-demo",
-      createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      boundStreamIds: ["stream-3"],
-      notifyGroupIds: ["group-3"],
-      metrics: {
-        alertCountTotal: 2,
-        alertCountByType: { congestion: 2 },
-        lastAlertAt: new Date(Date.now() - 23 * 60 * 60 * 1000),
-      },
-      historyStreams: [
-        {
-          streamId: "stream-3",
-          startAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-          endAt: new Date(Date.now() - 22 * 60 * 60 * 1000),
+    // Create mock tasks (依台八線 9 路段 + 中斷點統計重新編寫)
+    const tai8Tasks: Task[] = [
+      {
+        id: "task_1",
+        name: "台八線 · 東勢 - 天冷路段",
+        description: "巡檢範圍：東勢（24.1843, 120.9240）至 天冷（24.1964, 120.8390），全長約 22 公里",
+        status: "running",
+        startAt: new Date(Date.now() - 1.2 * 60 * 60 * 1000),
+        createdBy: "user-demo",
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+        boundStreamIds: ["stream-1"],
+        notifyGroupIds: ["group-1", "group-2"],
+        metrics: {
+          alertCountTotal: 9,
+          alertCountByType: { road_closure: 5, obstacle: 4 },
+          lastAlertAt: new Date(Date.now() - 9 * 60 * 1000),
         },
-      ],
-    }
+        currentTelemetry: { lat: 24.19, lng: 120.90, altitude: 120 },
+        historyStreams: [{ streamId: "stream-1", startAt: new Date(Date.now() - 1.2 * 60 * 60 * 1000) }],
+      },
 
-    this.tasks.set(task1.id, task1)
-    this.tasks.set(task2.id, task2)
-    this.tasks.set(task3.id, task3)
+      {
+        id: "task_2",
+        name: "台八線 · 天冷 - 谷關路段",
+        description: "巡檢範圍：天冷（24.1964, 120.8390）至 谷關（24.2026, 121.0033），全長約 11 公里",
+        status: "running",
+        startAt: new Date(Date.now() - 2.3 * 60 * 60 * 1000),
+        createdBy: "user-demo",
+        createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
+        boundStreamIds: ["stream-2"],
+        notifyGroupIds: ["group-1"],
+        metrics: {
+          alertCountTotal: 7,
+          alertCountByType: { road_closure: 2, obstacle: 5 },
+          lastAlertAt: new Date(Date.now() - 16 * 60 * 1000),
+        },
+        historyStreams: [{ streamId: "stream-2", startAt: new Date(Date.now() - 2.3 * 60 * 60 * 1000) }],
+      },
 
-    // Create mock alerts
-    this.createMockAlert("task-1", "stream-1", "critical", "accident", 0.92, true, true)
-    this.createMockAlert("task-1", "stream-1", "warn", "congestion", 0.78, false, true)
-    this.createMockAlert("task-2", "stream-2", "critical", "road_closure", 0.88, true, true)
-    this.createMockAlert("task-2", "stream-3", "warn", "signal_loss", 0.65, false, false)
+      {
+        id: "task_3",
+        name: "台八線 · 谷關 - 德基路段",
+        description: "巡檢範圍：谷關（24.2026, 121.0033）至 德基（24.2511, 121.1707），全長約 27 公里",
+        status: "running",
+        startAt: new Date(Date.now() - 3.6 * 60 * 60 * 1000),
+        createdBy: "user-demo",
+        createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
+        boundStreamIds: ["stream-1", "stream-3"],
+        notifyGroupIds: ["group-1", "group-3"],
+        metrics: {
+          alertCountTotal: 7,
+          alertCountByType: { road_closure: 5, obstacle: 2 },
+          lastAlertAt: new Date(Date.now() - 7 * 60 * 1000),
+        },
+        historyStreams: [
+          { streamId: "stream-1", startAt: new Date(Date.now() - 3.6 * 60 * 60 * 1000) },
+          { streamId: "stream-3", startAt: new Date(Date.now() - 2.8 * 60 * 60 * 1000) },
+        ],
+      },
+
+      {
+        id: "task_4",
+        name: "台八線 · 德基 - 梨山路段",
+        description: "巡檢範圍：德基（24.2511, 121.1707）至 梨山（24.2541, 121.2529），全長約 35 公里",
+        status: "running",
+        startAt: new Date(Date.now() - 4.8 * 60 * 60 * 1000),
+        createdBy: "user-demo",
+        createdAt: new Date(Date.now() - 5.2 * 60 * 60 * 1000),
+        boundStreamIds: ["stream-2"],
+        notifyGroupIds: ["group-2"],
+        metrics: {
+          alertCountTotal: 7,
+          alertCountByType: { road_closure: 3, obstacle: 4 },
+          lastAlertAt: new Date(Date.now() - 28 * 60 * 1000),
+        },
+        historyStreams: [{ streamId: "stream-2", startAt: new Date(Date.now() - 4.8 * 60 * 60 * 1000) }],
+      },
+
+      {
+        id: "task_5",
+        name: "台八線 · 梨山 - 大禹嶺路段",
+        description: "巡檢範圍：梨山（24.2541, 121.2529）至 大禹嶺（24.1863, 121.3267），全長約 49 公里",
+        status: "running",
+        startAt: new Date(Date.now() - 6.1 * 60 * 60 * 1000),
+        createdBy: "user-demo",
+        createdAt: new Date(Date.now() - 6.6 * 60 * 60 * 1000),
+        boundStreamIds: ["stream-3"],
+        notifyGroupIds: ["group-2", "group-3"],
+        metrics: {
+          alertCountTotal: 7,
+          alertCountByType: { road_closure: 3, obstacle: 4 },
+          lastAlertAt: new Date(Date.now() - 43 * 60 * 1000),
+        },
+        historyStreams: [{ streamId: "stream-3", startAt: new Date(Date.now() - 6.1 * 60 * 60 * 1000) }],
+      },
+
+      {
+        id: "task_6",
+        name: "台八線 · 大禹嶺 - 關原路段",
+        description: "巡檢範圍：大禹嶺（24.1863, 121.3267）至 關原（24.1874, 121.3324），全長約 2 公里",
+        status: "running",
+        startAt: new Date(Date.now() - 1.0 * 60 * 60 * 1000),
+        createdBy: "user-demo",
+        createdAt: new Date(Date.now() - 1.1 * 60 * 60 * 1000),
+        boundStreamIds: ["stream-1"],
+        notifyGroupIds: ["group-1"],
+        metrics: {
+          alertCountTotal: 0,
+          alertCountByType: { road_closure: 0, obstacle: 0 },
+          lastAlertAt: undefined,
+        },
+        historyStreams: [{ streamId: "stream-1", startAt: new Date(Date.now() - 1.0 * 60 * 60 * 1000) }],
+      },
+
+      {
+        id: "task_7",
+        name: "台八線 · 關原 - 天祥路段",
+        description: "巡檢範圍：關原（24.1874, 121.3324）至 天祥（24.1706, 121.5475），全長約 25 公里",
+        status: "running",
+        startAt: new Date(Date.now() - 3.0 * 60 * 60 * 1000),
+        createdBy: "user-demo",
+        createdAt: new Date(Date.now() - 3.2 * 60 * 60 * 1000),
+        boundStreamIds: ["stream-2"],
+        notifyGroupIds: ["group-3"],
+        metrics: {
+          alertCountTotal: 6,
+          alertCountByType: { road_closure: 2, obstacle: 4 },
+          lastAlertAt: new Date(Date.now() - 19 * 60 * 1000),
+        },
+        historyStreams: [{ streamId: "stream-2", startAt: new Date(Date.now() - 3.0 * 60 * 60 * 1000) }],
+      },
+
+      {
+        id: "task_8",
+        name: "台八線 · 天祥 - 太魯閣路段",
+        description: "巡檢範圍：天祥（24.1706, 121.5475）至 太魯閣（24.1639, 121.6063），全長約 7 公里",
+        status: "paused",
+        startAt: new Date(Date.now() - 5.5 * 60 * 60 * 1000),
+        createdBy: "user-demo",
+        createdAt: new Date(Date.now() - 6.0 * 60 * 60 * 1000),
+        boundStreamIds: ["stream-3"],
+        notifyGroupIds: ["group-2"],
+        metrics: {
+          alertCountTotal: 5,
+          alertCountByType: { road_closure: 3, obstacle: 2 },
+          lastAlertAt: new Date(Date.now() - 33 * 60 * 1000),
+        },
+        historyStreams: [{ streamId: "stream-3", startAt: new Date(Date.now() - 5.5 * 60 * 60 * 1000) }],
+      },
+
+      {
+        id: "task_9",
+        name: "台八線 · 太魯閣 - 新城路段",
+        description: "巡檢範圍：太魯閣（24.1639, 121.6063）至 新城（24.1702, 120.9052），全長約 13 公里",
+        status: "running",
+        startAt: new Date(Date.now() - 0.8 * 60 * 60 * 1000),
+        createdBy: "user-demo",
+        createdAt: new Date(Date.now() - 0.9 * 60 * 60 * 1000),
+        boundStreamIds: ["stream-2"],
+        notifyGroupIds: ["group-1", "group-3"],
+        metrics: {
+          alertCountTotal: 0,
+          alertCountByType: { road_closure: 0, obstacle: 0 },
+          lastAlertAt: undefined,
+        },
+        historyStreams: [{ streamId: "stream-2", startAt: new Date(Date.now() - 0.8 * 60 * 60 * 1000) }],
+      },
+    ]
+
+    tai8Tasks.forEach((t) => this.tasks.set(t.id, t))
+
+    // Create mock alerts (對應台八線任務：挑幾個「完全阻斷多」的做 Critical，「部分阻斷」做 Warn)
+    this.createMockAlert("tai8-task-dongshi-tianleng", "stream-1", "critical", "road_closure", 0.92, true, true)
+    this.createMockAlert("tai8-task-guguan-deji", "stream-3", "critical", "road_closure", 0.90, true, true)
+    this.createMockAlert("tai8-task-tianxiang-taroko", "stream-3", "critical", "road_closure", 0.89, true, true)
+
+    this.createMockAlert("tai8-task-tianleng-guguan", "stream-2", "warn", "obstacle", 0.72, false, true)
+    this.createMockAlert("tai8-task-deji-lishan", "stream-2", "warn", "obstacle", 0.70, false, false)
+    this.createMockAlert("tai8-task-guanyuan-tianxiang", "stream-2", "warn", "obstacle", 0.68, false, false)
+
   }
 
   private createMockAlert(
