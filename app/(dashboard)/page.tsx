@@ -75,7 +75,9 @@ export default function OverviewPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Active Tasks</CardTitle>
-            <ListTodo className="h-4 w-4 text-muted-foreground" />
+            <span className="h-9 w-9 rounded-full bg-primary/20 text-primary grid place-items-center shadow-sm">
+              <ListTodo className="h-5 w-5" />
+            </span>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-primary">{runningTasks}</div>
@@ -86,7 +88,9 @@ export default function OverviewPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Online Streams</CardTitle>
-            <Radio className="h-4 w-4 text-muted-foreground" />
+            <span className="h-9 w-9 rounded-full bg-success/20 text-success grid place-items-center shadow-sm">
+              <Radio className="h-5 w-5" />
+            </span>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-success">{onlineStreams}</div>
@@ -97,7 +101,9 @@ export default function OverviewPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Open Alerts</CardTitle>
-            <Bell className="h-4 w-4 text-muted-foreground" />
+            <span className="h-9 w-9 rounded-full bg-warning/20 text-warning grid place-items-center shadow-sm">
+              <Bell className="h-5 w-5" />
+            </span>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-warning">{openAlerts}</div>
@@ -108,7 +114,9 @@ export default function OverviewPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Critical Alerts</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            <span className="h-9 w-9 rounded-full bg-destructive/20 text-destructive grid place-items-center shadow-sm">
+              <AlertTriangle className="h-5 w-5" />
+            </span>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-destructive">{criticalAlerts}</div>
