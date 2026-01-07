@@ -288,28 +288,6 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
         </CardContent>
       </Card>
 
-      {/* Alert Type Breakdown */}
-      {Object.keys(task.metrics.alertCountByType).length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Alert Type Breakdown</CardTitle>
-            <CardDescription>Distribution of alerts by hazard type</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {Object.entries(task.metrics.alertCountByType)
-                .sort(([, a], [, b]) => b - a)
-                .map(([type, count]) => (
-                  <div key={type} className="p-4 rounded-lg border bg-muted/50">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider">{type.replace(/_/g, " ")}</p>
-                    <p className="text-2xl font-bold mt-1">{count}</p>
-                  </div>
-                ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Telemetry */}
       {task.currentTelemetry && (
         <Card>

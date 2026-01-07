@@ -69,7 +69,6 @@ export type TaskStatus = "idle" | "running" | "ended" | "paused"
 
 export interface TaskMetrics {
   alertCountTotal: number
-  alertCountByType: Record<string, number>
   lastAlertAt?: Date
   alertPointIds?: string[]
 }

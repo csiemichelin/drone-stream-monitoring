@@ -36,7 +36,6 @@ export async function POST(request: Request) {
       notifyGroupIds: notifyGroupIds || [],
       metrics: {
         alertCountTotal: 0,
-        alertCountByType: {},
       }
     }
 

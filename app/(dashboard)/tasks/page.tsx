@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { dataStore } from "@/lib/store"
+import { dataStore, tai8AlertPoints } from "@/lib/store"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -7,6 +7,7 @@ import { Plus, Play, Pause, Square, Radio, MapPin } from "lucide-react"
 
 export default function TasksPage() {
   const tasks = dataStore.getTasks()
+  const alertPointById = new Map(tai8AlertPoints.map((point) => [point.id, point]))
 
   return (
     <div className="p-6 space-y-6">
@@ -40,6 +41,15 @@ export default function TasksPage() {
           tasks.map((task) => {
             const streams = task.boundStreamIds.map((id) => dataStore.getStream(id)).filter(Boolean)
             const groups = task.notifyGroupIds.map((id) => dataStore.getGroup(id)).filter(Boolean)
+            const alertPointIds = task.metrics.alertPointIds ?? []
+            let fullyBlockedCount = 0
+            let partiallyBlockedCount = 0
+            alertPointIds.forEach((pointId) => {
+              const point = alertPointById.get(pointId)
+              if (!point) return
+              if (point.status === "fully_blocked") fullyBlockedCount += 1
+              if (point.status === "partially_blocked") partiallyBlockedCount += 1
+            })
 
             return (
               <Card key={task.id} className="hover:shadow-md transition-shadow">
@@ -129,21 +139,19 @@ export default function TasksPage() {
                   </div>
 
                   {/* Alert Metrics */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
                     <div>
                       <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Alerts</p>
                       <p className="text-2xl font-bold text-primary">{task.metrics.alertCountTotal}</p>
                     </div>
-                    {Object.entries(task.metrics.alertCountByType)
-                      .slice(0, 3)
-                      .map(([type, count]) => (
-                        <div key={type}>
-                          <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                            {type.replace(/_/g, " ")}
-                          </p>
-                          <p className="text-2xl font-bold">{count}</p>
-                        </div>
-                      ))}
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider">Full Interruptions</p>
+                      <p className="text-2xl font-bold">{fullyBlockedCount}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider">Partial Interruptions</p>
+                      <p className="text-2xl font-bold">{partiallyBlockedCount}</p>
+                    </div>
                   </div>
 
                   {/* Notification Groups */}

@@ -280,7 +280,6 @@ class DataStore {
         notifyGroupIds: ["group-1", "group-2"],
         metrics: {
           alertCountTotal: 9,
-          alertCountByType: { road_collapse: 5, obstacle: 4 },
           lastAlertAt: undefined,
           alertPointIds: ["block_1", "block_2", "block_3", "block_4", "block_5", "block_6", "block_7", "block_8", "block_9"],
         },
@@ -298,7 +297,6 @@ class DataStore {
         notifyGroupIds: ["group-1"],
         metrics: {
           alertCountTotal: 7,
-          alertCountByType: { road_collapse: 2, obstacle: 5 },
           lastAlertAt: undefined,
           alertPointIds: ["block_10", "block_11", "block_12", "block_13", "block_14", "block_15", "block_16"],
         },
@@ -316,7 +314,6 @@ class DataStore {
         notifyGroupIds: ["group-1", "group-3"],
         metrics: {
           alertCountTotal: 8,
-          alertCountByType: { road_collapse: 5, obstacle: 3 },
           lastAlertAt: undefined,
           alertPointIds: ["block_17", "block_18", "block_19", "block_20", "block_21", "block_22", "block_23", "block_24"],
         },
@@ -334,7 +331,6 @@ class DataStore {
         notifyGroupIds: ["group-2"],
         metrics: {
           alertCountTotal: 13,
-          alertCountByType: { road_collapse: 6, obstacle: 7 },
           lastAlertAt: undefined,
           alertPointIds: ["block_25", "block_26", "block_27", "block_28", "block_29", "block_30", "block_31", "block_32", "block_33", "block_34", "block_35", "block_36", "block_37"],
         },
@@ -352,7 +348,6 @@ class DataStore {
         notifyGroupIds: ["group-2", "group-3"],
         metrics: {
           alertCountTotal: 0,
-          alertCountByType: { road_collapse: 0, obstacle: 0 },
           lastAlertAt: undefined,
           alertPointIds: [],
         },
@@ -370,7 +365,6 @@ class DataStore {
         notifyGroupIds: ["group-1"],
         metrics: {
           alertCountTotal: 3,
-          alertCountByType: { road_collapse: 1, obstacle: 2 },
           lastAlertAt: undefined,
           alertPointIds: ["block_38", "block_39", "block_40"],
         },
@@ -388,7 +382,6 @@ class DataStore {
         notifyGroupIds: ["group-3"],
         metrics: {
           alertCountTotal: 3,
-          alertCountByType: { road_collapse: 1, obstacle: 2 },
           lastAlertAt: undefined,
           alertPointIds: ["block_41", "block_42", "block_43"],
         },
@@ -406,7 +399,6 @@ class DataStore {
         notifyGroupIds: ["group-2"],
         metrics: {
           alertCountTotal: 5,
-          alertCountByType: { road_collapse: 3, obstacle: 2 },
           lastAlertAt: undefined,
           alertPointIds: ["block_44", "block_45", "block_46", "block_47", "block_48"],
         },
@@ -424,7 +416,6 @@ class DataStore {
         notifyGroupIds: ["group-1", "group-3"],
         metrics: {
           alertCountTotal: 0,
-          alertCountByType: { road_collapse: 0, obstacle: 0 },
           lastAlertAt: undefined,
           alertPointIds: [],
         },
@@ -767,7 +758,6 @@ class DataStore {
     if (task) {
       const metrics = { ...task.metrics }
       metrics.alertCountTotal++
-      metrics.alertCountByType[alert.hazardType] = (metrics.alertCountByType[alert.hazardType] || 0) + 1
       metrics.lastAlertAt = alert.createdAt
       this.updateTask(task.id, { metrics })
     }
