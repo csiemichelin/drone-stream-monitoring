@@ -74,7 +74,7 @@ export default function OverviewPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base font-medium text-muted-foreground">當前任務</CardTitle>
+            <CardTitle className="text-base font-medium text-foreground/75">當前任務</CardTitle>
             <span className="h-9 w-9 rounded-full bg-primary/20 text-primary grid place-items-center shadow-sm">
               <ListTodo className="h-5 w-5" />
             </span>
@@ -82,7 +82,7 @@ export default function OverviewPage() {
           <CardContent className="pb-2">
             <div className="text-3xl font-bold text-primary">{runningTasks}</div>
             <div className="mt-1 flex items-center justify-between gap-3">
-              <p className="text-xs text-muted-foreground">筆巡檢任務執行中</p>
+              <p className="text-xs text-foreground/60">筆巡檢任務執行中</p>
               <Link
                 href="/tasks"
                 className="group inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-primary"
@@ -96,7 +96,7 @@ export default function OverviewPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base font-medium text-muted-foreground">即時串流</CardTitle>
+            <CardTitle className="text-base font-medium text-foreground/75">即時串流</CardTitle>
             <span className="h-9 w-9 rounded-full bg-success/20 text-success grid place-items-center shadow-sm">
               <Radio className="h-5 w-5" />
             </span>
@@ -104,7 +104,7 @@ export default function OverviewPage() {
           <CardContent className="pb-2">
             <div className="text-3xl font-bold text-success">{onlineStreams}</div>
             <div className="mt-1 flex items-center justify-between gap-3">
-              <p className="text-xs text-muted-foreground">路巡檢影像串流接收中</p>
+              <p className="text-xs text-foreground/60">路巡檢影像串流接收中</p>
               <Link
                 href="/streams"
                 className="group inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-success"
@@ -118,7 +118,7 @@ export default function OverviewPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base font-medium text-muted-foreground">異常偵測警示</CardTitle>
+            <CardTitle className="text-base font-medium text-foreground/75">異常偵測警示</CardTitle>
             <span className="h-9 w-9 rounded-full bg-warning/20 text-warning grid place-items-center shadow-sm">
               <Bell className="h-5 w-5" />
             </span>
@@ -126,7 +126,7 @@ export default function OverviewPage() {
           <CardContent className="pb-2">
             <div className="text-3xl font-bold text-warning">{48}</div>
             <div className="mt-1 flex items-center justify-between gap-3">
-              <p className="text-xs text-muted-foreground">筆異常偵測警示（含中、高風險）</p>
+              <p className="text-xs text-foreground/60">筆異常偵測警示（含中、高風險）</p>
               <Link
                 href="/alerts"
                 className="group inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-warning"
@@ -140,7 +140,7 @@ export default function OverviewPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base font-medium text-muted-foreground">高風險警示</CardTitle>
+            <CardTitle className="text-base font-medium text-foreground/75">高風險警示</CardTitle>
             <span className="h-9 w-9 rounded-full bg-destructive/20 text-destructive grid place-items-center shadow-sm">
               <AlertTriangle className="h-5 w-5" />
             </span>
@@ -148,7 +148,7 @@ export default function OverviewPage() {
           <CardContent className="pb-2">
             <div className="text-3xl font-bold text-destructive">{23}</div>
             <div className="mt-1 flex items-center justify-between gap-3">
-              <p className="text-xs text-muted-foreground">筆高風險警示，需立即處理</p>
+              <p className="text-xs text-foreground/60">筆高風險警示，需立即處理</p>
               <Link
                 href="/alerts"
                 className="group inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-destructive"
@@ -166,12 +166,12 @@ export default function OverviewPage() {
         <div className="lg:col-span-1 flex flex-col space-y-4">
           <Card className="flex-1">
             <CardHeader>
-              <CardTitle>Active Tasks</CardTitle>
-              <CardDescription>Currently running</CardDescription>
+              <CardTitle className="text-base font-medium text-foreground/75">巡檢任務</CardTitle>
+              <CardDescription className="text-xs text-foreground/60">任務執行中</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {runningTaskList.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No active tasks</p>
+                <p className="text-sm text-muted-foreground text-center py-4">目前沒有進行中任務</p>
               ) : (
                 runningTaskList.map((task) => (
                   <Link key={task.id} href={`/tasks/${task.id}`}>

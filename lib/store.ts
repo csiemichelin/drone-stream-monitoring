@@ -12,6 +12,65 @@ import type {
   Settings,
 } from "./types"
 
+// Test blockage points for Tai-8 map
+export type BlockPoint = {
+  id: string
+  lat: number
+  lng: number
+  status: "fully_blocked" | "partially_blocked"
+  label: string
+}
+
+export const tai8BlockagePoints: BlockPoint[] = [
+  { id: "block_3", lat: 24.24142253349646, lng: 120.83369109693069, status: "partially_blocked", label: "1.6km=>1.6km" },
+  { id: "block_2", lat: 24.19641391489506, lng: 120.83896859104198, status: "fully_blocked", label: "6.7km=>6.7km" },
+  { id: "block_7", lat: 24.17339895177517, lng: 120.83852149496494, status: "fully_blocked", label: "9.4km=>9.4km" },
+  { id: "block_5", lat: 24.16847971328785, lng: 120.84276812819672, status: "partially_blocked", label: "14.1km=>14.1km" },
+  { id: "block_6", lat: 24.16543277634449, lng: 121.60416900160862, status: "partially_blocked", label: "173.8km=>173.8km" },
+  { id: "block_4", lat: 24.160379267144165, lng: 121.6158291888184, status: "fully_blocked", label: "172.5km=>172.5km" },
+  { id: "block_1", lat: 24.184313927998218, lng: 120.92400483086016, status: "fully_blocked", label: "21.4km=>21.4km" },
+  { id: "block_9", lat: 24.200794525815, lng: 121.0014835884196, status: "partially_blocked", label: "31.1km=>31.1km" },
+  { id: "block_15", lat: 24.194074784869002, lng: 120.99453869594981, status: "partially_blocked", label: "31.6km=>31.6km" },
+  { id: "block_11", lat: 24.197756538540943, lng: 120.99836843335237, status: "fully_blocked", label: "32.0km=>32.0km" },
+  { id: "block_14", lat: 24.19501644601175, lng: 120.99595799854484, status: "fully_blocked", label: "32.5km=>32.5km" },
+  { id: "block_13", lat: 24.198346271253712, lng: 121.00018070921294, status: "partially_blocked", label: "32.7km=>32.7km" },
+  { id: "block_10", lat: 24.20263921503745, lng: 121.00326291780601, status: "partially_blocked", label: "32.8km=>32.8km" },
+  { id: "block_8", lat: 24.191875969636513, lng: 120.99251898374712, status: "partially_blocked", label: "33.3km=>33.3km" },
+  { id: "block_17", lat: 24.2030591603107, lng: 121.00800422258834, status: "partially_blocked", label: "34.2km=>34.2km" },
+  { id: "block_16", lat: 24.202299683641257, lng: 121.00927771273314, status: "fully_blocked", label: "34.4km=>34.4km" },
+  { id: "block_20", lat: 24.20330933965218, lng: 121.0138720762514, status: "partially_blocked", label: "34.9km=>34.9km" },
+  { id: "block_18", lat: 24.20417602914229, lng: 121.01433249221168, status: "fully_blocked", label: "35.0km=>35.0km" },
+  { id: "block_19", lat: 24.206776073010175, lng: 121.01305898438568, status: "fully_blocked", label: "35.3km=>35.3km" },
+  { id: "block_21", lat: 24.207553392326858, lng: 121.0121773367826, status: "fully_blocked", label: "35.4km=>35.4km" },
+  { id: "block_22", lat: 24.209765730292602, lng: 121.42489699384845, status: "partially_blocked", label: "155.5km=>155.5km" },
+  { id: "block_23", lat: 24.214490144955022, lng: 121.03704506585763, status: "fully_blocked", label: "38.2km=>38.2km" },
+  { id: "block_24", lat: 24.25105789799798, lng: 121.16649099943265, status: "partially_blocked", label: "61.5km=>61.5km" },
+  { id: "block_28", lat: 24.25343406325875, lng: 121.17354795830141, status: "partially_blocked", label: "62.3km=>62.3km" },
+  { id: "block_25", lat: 24.251149773652614, lng: 121.17072911849732, status: "fully_blocked", label: "62.4km=>62.4km" },
+  { id: "block_26", lat: 24.252138912920202, lng: 121.17199754756007, status: "partially_blocked", label: "62.5km=>62.5km" },
+  { id: "block_29", lat: 24.254532958531996, lng: 121.17477256816983, status: "partially_blocked", label: "63.0km=>63.0km" },
+  { id: "block_30", lat: 24.254808573509422, lng: 121.17526454558924, status: "fully_blocked", label: "63.1km=>63.1km" },
+  { id: "block_27", lat: 24.252836068654503, lng: 121.1721279512139, status: "fully_blocked", label: "63.3km=>63.3km" },
+  { id: "block_34", lat: 24.25510577336648, lng: 121.24970590932026, status: "partially_blocked", label: "96.1km=>96.1km" },
+  { id: "block_31", lat: 24.254591182825436, lng: 121.24775183663724, status: "fully_blocked", label: "96.3km=>96.3km" },
+  { id: "block_33", lat: 24.254168012277688, lng: 121.25231034959876, status: "fully_blocked", label: "97.4km=>97.4km" },
+  { id: "block_32", lat: 24.25412538677392, lng: 121.25298046465122, status: "fully_blocked", label: "97.4km=>97.4km" },
+  { id: "block_35", lat: 24.254423769462363, lng: 121.25568430808391, status: "partially_blocked", label: "97.7km=>97.7km" },
+  { id: "block_36", lat: 24.253827007849864, lng: 121.25366616377585, status: "partially_blocked", label: "97.8km=>97.8km" },
+  { id: "block_37", lat: 24.25417512099115, lng: 121.25513107356403, status: "partially_blocked", label: "97.8km=>97.8km" },
+  { id: "block_38", lat: 24.186306251672463, lng: 121.32665756854954, status: "partially_blocked", label: "145.5km=>145.5km" },
+  { id: "block_41", lat: 24.187379427279623, lng: 121.33241501571928, status: "fully_blocked", label: "146.1km=>146.1km" },
+  { id: "block_40", lat: 24.18838248108385, lng: 121.33478236908104, status: "partially_blocked", label: "146.3km=>146.3km" },
+  { id: "block_42", lat: 24.185007473705667, lng: 121.34193614571683, status: "partially_blocked", label: "147.0km=>147.0km" },
+  { id: "block_39", lat: 24.183839179299923, lng: 121.34259589925557, status: "fully_blocked", label: "147.2km=>147.2km" },
+  { id: "block_43", lat: 24.179793820793563, lng: 121.50990359394893, status: "fully_blocked", label: "175.8km=>175.8km" },
+  { id: "block_44", lat: 24.17524657513239, lng: 120.93181518751715, status: "partially_blocked", label: "9.7km=>9.7km" },
+  { id: "block_45", lat: 24.170584317300907, lng: 120.90581935642837, status: "fully_blocked", label: "8.7km=>8.7km" },
+  { id: "block_47", lat: 24.168704946619087, lng: 120.89777502518774, status: "partially_blocked", label: "6.7km=>6.7km" },
+  { id: "block_50", lat: 24.165079051253088, lng: 121.60557154094198, status: "partially_blocked", label: "175.7km=>175.7km" },
+  { id: "block_49", lat: 24.16390910501218, lng: 121.60628538602407, status: "fully_blocked", label: "175.8km=>175.8km" },
+  { id: "block_46", lat: 24.170192455505827, lng: 120.90524451561367, status: "fully_blocked", label: "8.1km=>8.1km" },
+]
 class DataStore {
   private users: Map<string, User> = new Map()
   private sessions: Map<string, Session> = new Map()
