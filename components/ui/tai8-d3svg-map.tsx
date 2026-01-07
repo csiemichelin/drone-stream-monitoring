@@ -455,6 +455,14 @@ export default function Tai8LeafletMap({
           const labelPane = map.createPane("countyLabelPane")
           labelPane.style.zIndex = "350"
         }
+        if (!map.getPane("blockagePane")) {
+          const blockagePane = map.createPane("blockagePane")
+          blockagePane.style.zIndex = "350"  // 設定在路線之上，但在標籤之下
+        }
+        if (!map.getPane("blockageHoverPane")) {  // ← 新增
+          const blockageHoverPane = map.createPane("blockageHoverPane")
+          blockageHoverPane.style.zIndex = "650"  // 在路線上方
+        }
 
         leafletMapRef.current = map
         setMapZoom(map.getZoom())
@@ -831,7 +839,36 @@ export default function Tai8LeafletMap({
 
         if (fullyCount > 0) {
           const [lat, lng] = offsetLatLng(bucket.center.lat, bucket.center.lng, -18, 0)
-          const marker = L.marker([lat, lng], { icon: createIcon("fully_blocked", fullyCount) }).addTo(layer)
+          const marker = L.marker([lat, lng], { icon: createIcon("fully_blocked", fullyCount), pane: "blockagePane" }).addTo(layer)
+          marker.on('mouseover', () => {
+            if (marker._icon) {
+              const hoverPane = map.getPane('blockageHoverPane')
+              if (hoverPane && marker._icon.parentNode) {
+                hoverPane.appendChild(marker._icon)
+              }
+            }
+            if (marker._shadow) {
+              const hoverPane = map.getPane('blockageHoverPane')
+              if (hoverPane && marker._shadow.parentNode) {
+                hoverPane.appendChild(marker._shadow)
+              }
+            }
+          })
+          
+          marker.on('mouseout', () => {
+            if (marker._icon) {
+              const normalPane = map.getPane('blockagePane')
+              if (normalPane && marker._icon.parentNode) {
+                normalPane.appendChild(marker._icon)
+              }
+            }
+            if (marker._shadow) {
+              const normalPane = map.getPane('blockagePane')
+              if (normalPane && marker._shadow.parentNode) {
+                normalPane.appendChild(marker._shadow)
+              }
+            }
+          })
           marker.bindPopup(popupHtml(bucket.label, `完全中斷 ${fullyCount} 處`, true, "路段資訊"), {
             closeButton: true,            // ✅ 右上角 X
             autoClose: true,
@@ -843,7 +880,36 @@ export default function Tai8LeafletMap({
 
         if (partiallyCount > 0) {
           const [lat, lng] = offsetLatLng(bucket.center.lat, bucket.center.lng, 18, 0)
-          const marker = L.marker([lat, lng], { icon: createIcon("partially_blocked", partiallyCount) }).addTo(layer)
+          const marker = L.marker([lat, lng], { icon: createIcon("partially_blocked", partiallyCount), pane: "blockagePane" }).addTo(layer)
+          marker.on('mouseover', () => {
+            if (marker._icon) {
+              const hoverPane = map.getPane('blockageHoverPane')
+              if (hoverPane && marker._icon.parentNode) {
+                hoverPane.appendChild(marker._icon)
+              }
+            }
+            if (marker._shadow) {
+              const hoverPane = map.getPane('blockageHoverPane')
+              if (hoverPane && marker._shadow.parentNode) {
+                hoverPane.appendChild(marker._shadow)
+              }
+            }
+          })
+          
+          marker.on('mouseout', () => {
+            if (marker._icon) {
+              const normalPane = map.getPane('blockagePane')
+              if (normalPane && marker._icon.parentNode) {
+                normalPane.appendChild(marker._icon)
+              }
+            }
+            if (marker._shadow) {
+              const normalPane = map.getPane('blockagePane')
+              if (normalPane && marker._shadow.parentNode) {
+                normalPane.appendChild(marker._shadow)
+              }
+            }
+          })
           marker.bindPopup(popupHtml(bucket.label, `部分中斷 ${partiallyCount} 處`, true, "路段資訊"), {
             closeButton: true,
             autoClose: true,
@@ -862,7 +928,36 @@ export default function Tai8LeafletMap({
 
       filtered.forEach((p) => {
         const icon = createIcon(p.status)
-        const marker = L.marker([p.lat, p.lng], { icon }).addTo(layer)
+        const marker = L.marker([p.lat, p.lng], { icon, pane: "blockagePane" }).addTo(layer)
+        marker.on('mouseover', () => {
+          if (marker._icon) {
+            const hoverPane = map.getPane('blockageHoverPane')
+            if (hoverPane && marker._icon.parentNode) {
+              hoverPane.appendChild(marker._icon)
+            }
+          }
+          if (marker._shadow) {
+            const hoverPane = map.getPane('blockageHoverPane')
+            if (hoverPane && marker._shadow.parentNode) {
+              hoverPane.appendChild(marker._shadow)
+            }
+          }
+        })
+        
+        marker.on('mouseout', () => {
+          if (marker._icon) {
+            const normalPane = map.getPane('blockagePane')
+            if (normalPane && marker._icon.parentNode) {
+              normalPane.appendChild(marker._icon)
+            }
+          }
+          if (marker._shadow) {
+            const normalPane = map.getPane('blockagePane')
+            if (normalPane && marker._shadow.parentNode) {
+              normalPane.appendChild(marker._shadow)
+            }
+          }
+        })
         const routeLabel = pointSegmentLabels[p.id] ?? "未命名路段"
         const statusText = p.status === "fully_blocked" ? "完全中斷" : "部分中斷"
         marker.bindPopup(popupHtml(routeLabel, `${p.label}：${statusText}`, false, "中斷點資訊"), {

@@ -355,3 +355,23 @@ body.reduce-motion *::after {
   line-height: 22px;
   text-align: center;
 }
+
+/* Blockage icon base + hover (Tai8 map) */
+.leaflet-container .blockage-icon {
+  transition: all 0.2s ease;
+}
+
+.leaflet-container .blockage-icon .blockage-pin {
+  opacity: 0.88;  /* 平常有一點透明，能看到下方路線 */
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.leaflet-container .blockage-icon:hover .blockage-pin {
+  opacity: 1;  /* hover 時完全不透明 */
+  transform: scale(1.1);  /* 稍微放大 */
+}
+
+.leaflet-container .leaflet-marker-icon.blockage-icon {
+  cursor: pointer;
+}
