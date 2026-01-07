@@ -233,6 +233,14 @@ function computePointSegmentLabels(segments: SegmentFeature[], points: BlockPoin
   return labels
 }
 
+const formatBlockageDisplay = (label: string, status: BlockPoint["status"]) => {
+  const match = label.match(/(\d+(?:\.\d+)?km=>\d+(?:\.\d+)?km)/)
+  const place = match ? `${match[1]} 處` : `${label} 處`
+  const statusText = status === "fully_blocked" ? "完全中斷" : "部分中斷"
+  const statusClass = status === "fully_blocked" ? "text-red-600" : "text-amber-500"
+  return { place, statusText, statusClass }
+}
+
 function formatBlockageDetail(label: string, status: BlockPoint["status"]) {
   const statusText = status === "fully_blocked" ? "完全中斷" : "部分中斷"
   const match = label.match(/(\d+(?:\.\d+)?km=>\d+(?:\.\d+)?km處)/)
@@ -1059,15 +1067,24 @@ export default function Tai8LeafletMap({
             <div className="mx-4 mb-4 mt-3 max-h-36 overflow-y-auto pr-1 text-sm text-slate-500">
               {(() => {
                 const bucket = segmentBuckets[selectedSegment.key]
-                const points = bucket ? [...bucket.fully, ...bucket.partially] : []
-                if (points.length === 0) {
-                  return <div className="pl-2">此路段目前無中斷點資訊</div>
-                }
-                return points.map((p) => (
-                  <div key={p.id} className="pl-2">
-                    {formatBlockageDetail(p.label, p.status)}
-                  </div>
-                ))
+              const points = bucket ? [...bucket.fully, ...bucket.partially] : []
+              if (points.length === 0) {
+                return <div className="pl-2">此路段目前無中斷點資訊</div>
+              }
+              return points.map((p) => (
+                <div key={p.id} className="pl-2 flex items-baseline gap-2">
+                  {(() => {
+                    const d = formatBlockageDisplay(p.label, p.status)
+                    return (
+                      <>
+                        <span className="min-w-[140px] tabular-nums">{d.place}</span>
+                        <span className="text-slate-400">：</span>
+                        <span className={`${d.statusClass} font-semibold`}>{d.statusText}</span>
+                      </>
+                    )
+                  })()}
+                </div>
+              ))
               })()}
             </div>
             </div>
