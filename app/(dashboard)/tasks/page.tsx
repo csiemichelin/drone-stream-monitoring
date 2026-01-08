@@ -88,11 +88,18 @@ export default function TasksPage() {
                       </div>
                       {task.description && <CardDescription className="text-sm">{task.description}</CardDescription>}
                     </div>
-                    <Link href={`/tasks/${task.id}`}>
-                      <Button variant="outline" size="sm">
-                        View Details
-                      </Button>
-                    </Link>
+                    <div className="flex gap-2">
+                      <Link href={`/tasks/${task.id}/edit`}>
+                        <Button variant="secondary" size="sm">
+                          Edit
+                        </Button>
+                      </Link>
+                      <Link href={`/tasks/${task.id}`}>
+                        <Button variant="outline" size="sm">
+                          View Details
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">

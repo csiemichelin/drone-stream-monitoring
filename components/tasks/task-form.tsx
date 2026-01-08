@@ -12,21 +12,34 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Loader2, Star } from "lucide-react"
-import type { Stream, NotificationGroup } from "@/lib/types"
+import type { Stream, NotificationGroup, Task } from "@/lib/types"
 
-export function TaskForm() {
+type TaskFormProps = {
+  task?: Pick<Task, "id" | "name" | "description" | "boundStreamIds" | "notifyGroupIds">
+}
+
+export function TaskForm({ task }: TaskFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [streams, setStreams] = useState<Stream[]>([])
   const [groups, setGroups] = useState<NotificationGroup[]>([])
 
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [selectedStreams, setSelectedStreams] = useState<string[]>([])
-  const [selectedGroups, setSelectedGroups] = useState<string[]>([])
+  const [name, setName] = useState(task?.name ?? "")
+  const [description, setDescription] = useState(task?.description ?? "")
+  const [selectedStreams, setSelectedStreams] = useState<string[]>(task?.boundStreamIds ?? [])
+  const [selectedGroups, setSelectedGroups] = useState<string[]>(task?.notifyGroupIds ?? [])
   const [rtspName, setRtspName] = useState("")
   const [rtspUrl, setRtspUrl] = useState("")
   const [addingRtsp, setAddingRtsp] = useState(false)
+
+  const isEdit = Boolean(task)
+
+  useEffect(() => {
+    setName(task?.name ?? "")
+    setDescription(task?.description ?? "")
+    setSelectedStreams(task?.boundStreamIds ?? [])
+    setSelectedGroups(task?.notifyGroupIds ?? [])
+  }, [task])
 
   useEffect(() => {
     // Fetch streams and groups
@@ -43,8 +56,11 @@ export function TaskForm() {
     setLoading(true)
 
     try {
-      const res = await fetch("/api/tasks", {
-        method: "POST",
+      const endpoint = isEdit ? `/api/tasks/${task?.id}` : "/api/tasks"
+      const method = isEdit ? "PATCH" : "POST"
+
+      const res = await fetch(endpoint, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
@@ -55,11 +71,12 @@ export function TaskForm() {
       })
 
       if (res.ok) {
-        router.push("/tasks")
+        const redirectTo = isEdit ? `/tasks/${task?.id}` : "/tasks"
+        router.push(redirectTo)
         router.refresh()
       }
     } catch (error) {
-      console.error("Failed to create task:", error)
+      console.error("Failed to save task:", error)
     } finally {
       setLoading(false)
     }
@@ -302,10 +319,10 @@ export function TaskForm() {
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating...
+              {isEdit ? "Saving..." : "Creating..."}
             </>
           ) : (
-            "Create Task"
+            isEdit ? "Update Task" : "Create Task"
           )}
         </Button>
         <Button type="button" variant="outline" onClick={() => router.back()}>
