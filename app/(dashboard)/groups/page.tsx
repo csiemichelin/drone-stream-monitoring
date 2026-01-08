@@ -1,19 +1,25 @@
+"use client"
+
 import Link from "next/link"
+import { useLayoutEffect, useRef } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { dataStore } from "@/lib/store"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
-import { Plus, Star, Phone, Mail, MessageSquare, Users } from "lucide-react"
+  Plus,
+  Star,
+  Phone,
+  Mail,
+  MessageSquare,
+  Users,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react"
 
-const PAGE_SIZE = 4
+const PAGE_SIZE = 5
 
 function getPageItems(current: number, total: number) {
   const items: Array<number | "ellipsis"> = []
@@ -31,17 +37,43 @@ function getPageItems(current: number, total: number) {
   return items
 }
 
-export default function GroupsPage({ searchParams }: { searchParams?: { page?: string } }) {
+export default function GroupsPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
   const groups = dataStore.getGroups()
   const totalPages = Math.max(1, Math.ceil(groups.length / PAGE_SIZE))
-  const currentPage = Math.min(
-    totalPages,
-    Math.max(1, Number.parseInt(searchParams?.page ?? "1", 10) || 1),
-  )
+  const currentPage = Math.min(totalPages, Math.max(1, Number.parseInt(searchParams.get("page") ?? "1", 10) || 1))
+
   const startIndex = (currentPage - 1) * PAGE_SIZE
   const pagedGroups = groups.slice(startIndex, startIndex + PAGE_SIZE)
   const favoriteGroups = pagedGroups.filter((g) => g.favorite)
   const otherGroups = pagedGroups.filter((g) => !g.favorite)
+
+  // ✅ 讓切頁後視窗停留在原本高度：以 pager 作為 anchor
+  const pagerRef = useRef<HTMLDivElement | null>(null)
+  const pendingAnchorTopRef = useRef<number | null>(null)
+
+  const pushPage = (nextPage: number) => {
+    const clamped = Math.min(totalPages, Math.max(1, nextPage))
+    pendingAnchorTopRef.current = pagerRef.current?.getBoundingClientRect().top ?? null
+
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("page", String(clamped))
+    router.push(`?${params.toString()}`, { scroll: false })
+  }
+
+  useLayoutEffect(() => {
+    const prevTop = pendingAnchorTopRef.current
+    if (prevTop == null) return
+    const nextTop = pagerRef.current?.getBoundingClientRect().top
+    if (typeof nextTop !== "number") {
+      pendingAnchorTopRef.current = null
+      return
+    }
+    window.scrollBy(0, nextTop - prevTop)
+    pendingAnchorTopRef.current = null
+  }, [currentPage, favoriteGroups.length, otherGroups.length])
 
   return (
     <div className="p-6 space-y-6">
@@ -208,31 +240,96 @@ export default function GroupsPage({ searchParams }: { searchParams?: { page?: s
       )}
 
       {groups.length > PAGE_SIZE && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div ref={pagerRef} className="flex flex-col items-end gap-2 text-sm text-muted-foreground">
           <span>
             Showing {startIndex + 1}-{Math.min(startIndex + PAGE_SIZE, groups.length)} of {groups.length} groups
           </span>
-          <Pagination className="justify-end">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious href={`?page=${Math.max(1, currentPage - 1)}`} />
-              </PaginationItem>
-              {getPageItems(currentPage, totalPages).map((item, index) => (
-                <PaginationItem key={`${item}-${index}`}>
-                  {item === "ellipsis" ? (
-                    <PaginationEllipsis />
-                  ) : (
-                    <PaginationLink href={`?page=${item}`} isActive={item === currentPage}>
-                      {item}
-                    </PaginationLink>
-                  )}
-                </PaginationItem>
-              ))}
-              <PaginationItem>
-                <PaginationNext href={`?page=${Math.min(totalPages, currentPage + 1)}`} />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+
+          <div className="flex items-center gap-2 text-sm">
+            <button
+              type="button"
+              onClick={() => pushPage(1)}
+              className="h-8 w-8 grid place-items-center rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-blue-50"
+              aria-label="First page"
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => pushPage(Math.max(1, currentPage - 1))}
+              className="h-8 w-8 grid place-items-center rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-blue-50"
+              aria-label="Previous page"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+
+            {getPageItems(currentPage, totalPages).map((item, index) =>
+              item === "ellipsis" ? (
+                <span key={`${item}-${index}`} className="px-2 text-slate-400">
+                  …
+                </span>
+              ) : (
+                <button
+                  key={`${item}-${index}`}
+                  type="button"
+                  onClick={() => pushPage(item)}
+                  className={`h-8 w-8 grid place-items-center rounded-full border ${
+                    item === currentPage
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-slate-700 border-slate-200 hover:bg-blue-50"
+                  }`}
+                >
+                  {item}
+                </button>
+              ),
+            )}
+
+            <button
+              type="button"
+              onClick={() => pushPage(Math.min(totalPages, currentPage + 1))}
+              className="h-8 w-8 grid place-items-center rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-blue-50"
+              aria-label="Next page"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => pushPage(totalPages)}
+              className="h-8 w-8 grid place-items-center rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-blue-50"
+              aria-label="Last page"
+            >
+              <ChevronsRight className="h-4 w-4" />
+            </button>
+
+            <form
+              className="flex items-center gap-2 text-xs text-muted-foreground"
+              onSubmit={(e) => {
+                e.preventDefault()
+                const raw = (e.currentTarget.elements.namedItem("page") as HTMLInputElement | null)?.value ?? ""
+                const target = Number.parseInt(raw, 10)
+                if (Number.isNaN(target)) return
+                pushPage(target)
+              }}
+            >
+              <input
+                name="page"
+                type="number"
+                min={1}
+                max={totalPages}
+                defaultValue={currentPage}
+                className="w-16 rounded-md border border-slate-300 px-2 py-1 text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              />
+              <span>of {groups.length} items</span>
+              <button
+                type="submit"
+                className="rounded-md border border-slate-300 bg-white px-3 py-1 font-medium text-slate-700 hover:bg-blue-50"
+              >
+                Go
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </div>

@@ -4,20 +4,11 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
-import { AlertTriangle, CheckCircle } from "lucide-react"
+import { AlertTriangle, CheckCircle, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 import type { Alert, Stream, Task } from "@/lib/types"
 import Link from "next/link"
 
-const PAGE_SIZE = 8
+const PAGE_SIZE = 6
 
 function getPageItems(current: number, total: number) {
   const items: Array<number | "ellipsis"> = []
@@ -328,50 +319,90 @@ export default function AlertsPage() {
       </div>
 
       {alerts.length > PAGE_SIZE && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex flex-col items-end gap-2 text-sm text-muted-foreground">
           <span>
             Showing {startIndex + 1}-{Math.min(startIndex + PAGE_SIZE, alerts.length)} of {alerts.length} alerts
           </span>
-          <Pagination className="justify-end">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(event) => {
-                    event.preventDefault()
-                    setPage(Math.max(1, safePage - 1))
-                  }}
-                />
-              </PaginationItem>
-              {getPageItems(safePage, totalPages).map((item, index) => (
-                <PaginationItem key={`${item}-${index}`}>
-                  {item === "ellipsis" ? (
-                    <PaginationEllipsis />
-                  ) : (
-                    <PaginationLink
-                      href="#"
-                      isActive={item === safePage}
-                      onClick={(event) => {
-                        event.preventDefault()
-                        setPage(item)
-                      }}
-                    >
-                      {item}
-                    </PaginationLink>
-                  )}
-                </PaginationItem>
-              ))}
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(event) => {
-                    event.preventDefault()
-                    setPage(Math.min(totalPages, safePage + 1))
-                  }}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+          <div className="flex items-center gap-2 text-sm">
+            <button
+              type="button"
+              onClick={() => setPage(1)}
+              className="h-8 w-8 grid place-items-center rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-blue-50"
+              aria-label="First page"
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage(Math.max(1, safePage - 1))}
+              className="h-8 w-8 grid place-items-center rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-blue-50"
+              aria-label="Previous page"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            {getPageItems(safePage, totalPages).map((item, index) =>
+              item === "ellipsis" ? (
+                <span key={`${item}-${index}`} className="px-2 text-slate-400">
+                  …
+                </span>
+              ) : (
+                <button
+                  key={`${item}-${index}`}
+                  type="button"
+                  onClick={() => setPage(item)}
+                  className={`h-8 w-8 grid place-items-center rounded-full border ${
+                    item === safePage
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-slate-700 border-slate-200 hover:bg-blue-50"
+                  }`}
+                >
+                  {item}
+                </button>
+              )
+            )}
+            <button
+              type="button"
+              onClick={() => setPage(Math.min(totalPages, safePage + 1))}
+              className="h-8 w-8 grid place-items-center rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-blue-50"
+              aria-label="Next page"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage(totalPages)}
+              className="h-8 w-8 grid place-items-center rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-blue-50"
+              aria-label="Last page"
+            >
+              <ChevronsRight className="h-4 w-4" />
+            </button>
+            <form
+              className="flex items-center gap-2 text-xs text-muted-foreground"
+              onSubmit={(e) => {
+                e.preventDefault()
+                const target = Number.parseInt((e.currentTarget.elements.namedItem("jump") as HTMLInputElement).value, 10)
+                if (Number.isNaN(target)) return
+                const clamped = Math.min(totalPages, Math.max(1, target))
+                setPage(clamped)
+              }}
+            >
+              <input
+                name="jump"
+                type="number"
+                min={1}
+                max={totalPages}
+                className="w-16 rounded-md border border-slate-300 px-2 py-1 text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                placeholder={`${safePage}`}
+              />
+              <span>of {alerts.length} items</span>
+              <button
+                type="submit"
+                className="rounded-md border border-slate-300 bg-white px-3 py-1 font-medium text-slate-700 hover:bg-blue-50"
+              >
+                Go
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </div>
