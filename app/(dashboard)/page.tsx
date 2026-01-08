@@ -205,7 +205,7 @@ export default function OverviewPage() {
               {/* View All 固定在底部 */}
               <Link href="/tasks" className="mt-3">
                 <Button variant="outline" className="w-full bg-transparent">
-                  View All Tasks
+                  查看所有任務
                 </Button>
               </Link>
             </CardContent>
@@ -261,7 +261,7 @@ export default function OverviewPage() {
 
               <Link href="/streams" className="mt-3">
                 <Button variant="outline" className="w-full bg-transparent">
-                  View All Streams
+                  查看所有串流
                 </Button>
               </Link>
             </CardContent>
