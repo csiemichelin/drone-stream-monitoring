@@ -174,7 +174,7 @@ export function TaskForm() {
               streams.map((stream) => (
                 <label
                   key={stream.id}
-                  className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 cursor-pointer"
+                  className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent cursor-pointer"
                 >
                   <Checkbox
                     checked={selectedStreams.includes(stream.id)}
@@ -223,7 +223,7 @@ export function TaskForm() {
               {favoriteGroups.map((group) => (
                 <label
                   key={group.id}
-                  className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 cursor-pointer"
+                  className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent cursor-pointer"
                 >
                   <Checkbox
                     checked={selectedGroups.includes(group.id)}
@@ -261,7 +261,7 @@ export function TaskForm() {
               {otherGroups.map((group) => (
                 <label
                   key={group.id}
-                  className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 cursor-pointer"
+                  className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent cursor-pointer"
                 >
                   <Checkbox
                     checked={selectedGroups.includes(group.id)}

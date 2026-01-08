@@ -154,7 +154,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
             ) : (
               streams.map((stream) => (
                 <Link key={stream.id} href={`/streams/${stream.id}`}>
-                  <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer">
+                  <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent transition-colors cursor-pointer">
                     <div className="relative w-20 h-12 bg-muted rounded overflow-hidden shrink-0">
                       <div className="absolute inset-0 flex items-center justify-center">
                         <Radio className="h-6 w-6 text-muted-foreground" />
@@ -206,7 +206,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
             ) : (
               groups.map((group) => (
                 <Link key={group.id} href={`/groups/${group.id}`}>
-                  <div className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer">
+                  <div className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent transition-colors cursor-pointer">
                     <div className="flex-1">
                       <p className="text-sm font-medium">{group.name}</p>
                       <p className="text-xs text-muted-foreground line-clamp-1">{group.description}</p>
@@ -242,7 +242,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
               {recentAlerts.map((alert) => (
                 <div
                   key={alert.id}
-                  className="flex items-start gap-3 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                  className="flex items-start gap-3 p-4 rounded-lg border bg-card hover:bg-accent transition-colors"
                 >
                   <AlertTriangle
                     className={`h-5 w-5 mt-0.5 ${

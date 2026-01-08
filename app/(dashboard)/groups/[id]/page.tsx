@@ -182,7 +182,7 @@ export default async function GroupDetailPage({ params }: GroupDetailPageProps) 
             <div className="space-y-2">
               {tasks.map((task) => (
                 <Link key={task.id} href={`/tasks/${task.id}`}>
-                  <div className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer">
+                  <div className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent transition-colors cursor-pointer">
                     <div>
                       <p className="text-sm font-medium">{task.name}</p>
                       <p className="text-xs text-muted-foreground">

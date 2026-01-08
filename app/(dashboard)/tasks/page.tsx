@@ -2,67 +2,23 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { dataStore, tai8AlertPoints } from "@/lib/store"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Play, Pause, Square, Radio, MapPin, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
+import { PaginationControls, paginate } from "@/components/ui/pagination"
+import { Plus, Play, Pause, Square, Radio, MapPin } from "lucide-react"
 
 const PAGE_SIZE = 5
-
-function getPageItems(current: number, total: number) {
-  const items: Array<number | "ellipsis"> = []
-  if (total <= 7) {
-    for (let i = 1; i <= total; i += 1) items.push(i)
-    return items
-  }
-  items.push(1)
-  if (current > 3) items.push("ellipsis")
-  const start = Math.max(2, current - 1)
-  const end = Math.min(total - 1, current + 1)
-  for (let i = start; i <= end; i += 1) items.push(i)
-  if (current < total - 2) items.push("ellipsis")
-  items.push(total)
-  return items
-}
 
 export default function TasksPage() {
   const tasks = dataStore.getTasks()
   const [page, setPage] = useState(1)
 
-  const totalPages = Math.max(1, Math.ceil(tasks.length / PAGE_SIZE))
-  const safePage = Math.min(totalPages, Math.max(1, page))
-  const startIndex = (safePage - 1) * PAGE_SIZE
-  const pagedTasks = tasks.slice(startIndex, startIndex + PAGE_SIZE)
+  const { safePage, startIndex, endIndex, totalPages } = paginate(tasks.length, PAGE_SIZE, page)
+  const pagedTasks = tasks.slice(startIndex, endIndex)
   const alertPointById = new Map(tai8AlertPoints.map((point) => [point.id, point]))
-
-  useEffect(() => {
-    if (page !== safePage) setPage(safePage)
-  }, [page, safePage])
-
-  // ✅ 讓切頁後視窗停留在原本高度：以 pager 作為 anchor
-  const pagerRef = useRef<HTMLDivElement | null>(null)
-  const pendingAnchorTopRef = useRef<number | null>(null)
-
-  const handleSetPage = (next: number) => {
-    // 在 setPage 前記錄 pager 在 viewport 的 top
-    pendingAnchorTopRef.current = pagerRef.current?.getBoundingClientRect().top ?? null
-    setPage(next)
-  }
-
-  useLayoutEffect(() => {
-    const prevTop = pendingAnchorTopRef.current
-    if (prevTop == null) return
-    const nextTop = pagerRef.current?.getBoundingClientRect().top
-    if (typeof nextTop !== "number") {
-      pendingAnchorTopRef.current = null
-      return
-    }
-    // 把 pager 拉回到原本的 viewport 高度
-    window.scrollBy(0, nextTop - prevTop)
-    pendingAnchorTopRef.current = null
-  }, [safePage, pagedTasks.length])
 
   return (
     <div className="p-6 space-y-6">
@@ -229,99 +185,16 @@ export default function TasksPage() {
         )}
       </div>
 
-      {tasks.length > PAGE_SIZE && (
-        <div ref={pagerRef} className="flex flex-col items-end gap-2 text-sm text-muted-foreground">
-          <span>
-            Showing {startIndex + 1}-{Math.min(startIndex + PAGE_SIZE, tasks.length)} of {tasks.length} tasks
-          </span>
-          <div className="flex items-center gap-2 text-sm">
-            <button
-              type="button"
-              onClick={() => handleSetPage(1)}
-              className="h-8 w-8 grid place-items-center rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-blue-50"
-              aria-label="First page"
-            >
-              <ChevronsLeft className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSetPage(Math.max(1, safePage - 1))}
-              className="h-8 w-8 grid place-items-center rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-blue-50"
-              aria-label="Previous page"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-
-            {getPageItems(safePage, totalPages).map((item, index) =>
-              item === "ellipsis" ? (
-                <span key={`${item}-${index}`} className="px-2 text-slate-400">
-                  …
-                </span>
-              ) : (
-                <button
-                  key={`${item}-${index}`}
-                  type="button"
-                  onClick={() => handleSetPage(item)}
-                  className={`h-8 w-8 grid place-items-center rounded-full border ${
-                    item === safePage
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-slate-700 border-slate-200 hover:bg-blue-50"
-                  }`}
-                >
-                  {item}
-                </button>
-              )
-            )}
-
-            <button
-              type="button"
-              onClick={() => handleSetPage(Math.min(totalPages, safePage + 1))}
-              className="h-8 w-8 grid place-items-center rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-blue-50"
-              aria-label="Next page"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSetPage(totalPages)}
-              className="h-8 w-8 grid place-items-center rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-blue-50"
-              aria-label="Last page"
-            >
-              <ChevronsRight className="h-4 w-4" />
-            </button>
-
-            <form
-              className="flex items-center gap-2 text-xs text-muted-foreground"
-              onSubmit={(e) => {
-                e.preventDefault()
-                const target = Number.parseInt(
-                  (e.currentTarget.elements.namedItem("jump") as HTMLInputElement).value,
-                  10
-                )
-                if (Number.isNaN(target)) return
-                const clamped = Math.min(totalPages, Math.max(1, target))
-                handleSetPage(clamped)
-              }}
-            >
-              <input
-                name="jump"
-                type="number"
-                min={1}
-                max={totalPages}
-                className="w-16 rounded-md border border-slate-300 px-2 py-1 text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                placeholder={`${safePage}`}
-              />
-              <span>of {totalPages} pages</span>
-              <button
-                type="submit"
-                className="rounded-md border border-slate-300 bg-white px-3 py-1 font-medium text-slate-700 hover:bg-blue-50"
-              >
-                Go
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      <PaginationControls
+        totalItems={tasks.length}
+        pageSize={PAGE_SIZE}
+        page={safePage}
+        onPageChange={setPage}
+        itemLabel="tasks"
+        jumpLabel={`of ${totalPages} pages`}
+        preserveScroll
+        visibleCount={pagedTasks.length}
+      />
     </div>
   )
 }

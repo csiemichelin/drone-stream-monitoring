@@ -183,7 +183,7 @@ export default function OverviewPage() {
                 ) : (
                   visibleTasks.map((task) => (
                     <Link key={task.id} href={`/tasks/${task.id}`}>
-                      <div className="p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer">
+                      <div className="p-3 rounded-lg border bg-card hover:bg-accent transition-colors cursor-pointer">
                         <div className="flex items-center justify-between gap-2">
                           <p className="text-sm font-medium truncate">{task.name}</p>
                           <Badge variant="default" className="text-[10px]">Running</Badge>
@@ -224,7 +224,7 @@ export default function OverviewPage() {
                 ) : (
                   visibleStreams.map((stream) => (
                     <Link key={stream.id} href={`/streams/${stream.id}`}>
-                      <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent transition-colors cursor-pointer">
                         <div className="relative w-16 h-10 bg-muted rounded overflow-hidden shrink-0">
                           <div className="absolute inset-0 flex items-center justify-center">
                             <Radio className="h-5 w-5 text-muted-foreground" />
