@@ -1,11 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { AlertTriangle, CheckCircle } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { DateTimePicker } from "@/components/ui/date-time-picker"
 import { PaginationControls, paginate } from "@/components/ui/pagination"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { Alert, Stream, Task } from "@/lib/types"
@@ -21,6 +22,9 @@ export default function AlertsPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [streams, setStreams] = useState<Stream[]>([])
   const [page, setPage] = useState(1)
+  const [startDateTime, setStartDateTime] = useState<Date | null>(() => new Date("2000-01-01T00:00:00Z"))
+  const [endDateTime, setEndDateTime] = useState<Date | null>(() => new Date())
+  const [rangeError, setRangeError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchAlerts()
@@ -28,7 +32,7 @@ export default function AlertsPage() {
 
   useEffect(() => {
     setPage(1)
-  }, [riskFilter, hazardFilter, taskFilter, streamFilter])
+  }, [riskFilter, hazardFilter, taskFilter, streamFilter, startDateTime, endDateTime])
 
   useEffect(() => {
     fetch("/api/tasks")
@@ -56,13 +60,31 @@ export default function AlertsPage() {
       .catch(console.error)
   }
 
+  useEffect(() => {
+    if (startDateTime && endDateTime && startDateTime > endDateTime) {
+      setRangeError("Start time must be before end time")
+    } else {
+      setRangeError(null)
+    }
+  }, [startDateTime, endDateTime])
+
+  const filteredAlerts = useMemo(() => {
+    if (rangeError) return []
+    return alerts.filter((alert) => {
+      const created = new Date(alert.createdAt)
+      if (startDateTime && created < startDateTime) return false
+      if (endDateTime && created > endDateTime) return false
+      return true
+    })
+  }, [alerts, startDateTime, endDateTime, rangeError])
+
   const stats = {
-    total: alerts.length,
-    full: alerts.filter((a) => a.interruption === "full").length,
-    partial: alerts.filter((a) => a.interruption === "partial").length,
+    total: filteredAlerts.length,
+    full: filteredAlerts.filter((a) => a.interruption === "full").length,
+    partial: filteredAlerts.filter((a) => a.interruption === "partial").length,
   }
-  const { startIndex, endIndex } = paginate(alerts.length, PAGE_SIZE, page)
-  const pagedAlerts = alerts.slice(startIndex, endIndex)
+  const { startIndex, endIndex } = paginate(filteredAlerts.length, PAGE_SIZE, page)
+  const pagedAlerts = filteredAlerts.slice(startIndex, endIndex)
 
   return (
     <div className="p-6 space-y-6">
@@ -70,6 +92,12 @@ export default function AlertsPage() {
         <h1 className="text-3xl font-bold">Alerts Center</h1>
         <p className="text-muted-foreground">Monitor and manage all system alerts</p>
       </div>
+
+      {rangeError && (
+        <Card className="border-destructive/30 bg-destructive/5">
+          <CardContent className="py-3 text-sm text-destructive">{rangeError}</CardContent>
+        </Card>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -107,6 +135,24 @@ export default function AlertsPage() {
           <CardTitle className="text-lg">Filters</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-4">
+          <div className="w-full">
+            <div className="flex flex-col gap-3 p-3 sm:flex-row sm:items-end sm:justify-between bg-muted/40 rounded-md">
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-medium text-muted-foreground">Start</span>
+                  <DateTimePicker value={startDateTime} onChange={setStartDateTime} />
+                </div>
+
+                <span className="text-muted-foreground sm:pb-2">to</span>
+
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-medium text-muted-foreground">End</span>
+                  <DateTimePicker value={endDateTime} onChange={setEndDateTime} />
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="flex items-center gap-2">
             <label className="text-sm text-muted-foreground">Risk:</label>
             <Select value={riskFilter} onValueChange={setRiskFilter}>
@@ -187,6 +233,8 @@ export default function AlertsPage() {
                 setHazardFilter("all")
                 setTaskFilter("all")
                 setStreamFilter("all")
+                setStartDateTime(new Date("2000-01-01T00:00:00Z"))
+                setEndDateTime(new Date())
               }}
             >
               Clear Filters

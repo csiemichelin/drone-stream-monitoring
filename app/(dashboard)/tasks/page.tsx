@@ -2,22 +2,45 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { dataStore, tai8AlertPoints } from "@/lib/store"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { DateTimePicker } from "@/components/ui/date-time-picker"
 import { PaginationControls, paginate } from "@/components/ui/pagination"
-import { Plus, Play, Pause, Square, Radio, MapPin } from "lucide-react"
+import { Plus, Play, Pause, Square, Radio, MapPin, Search } from "lucide-react"
 
 const PAGE_SIZE = 5
 
 export default function TasksPage() {
   const tasks = dataStore.getTasks()
   const [page, setPage] = useState(1)
+  const [startDateTime, setStartDateTime] = useState<Date | null>(() => new Date("2000-01-01T00:00:00Z"))
+  const [endDateTime, setEndDateTime] = useState<Date | null>(() => new Date())
+  const [rangeError, setRangeError] = useState<string | null>(null)
 
-  const { safePage, startIndex, endIndex, totalPages } = paginate(tasks.length, PAGE_SIZE, page)
-  const pagedTasks = tasks.slice(startIndex, endIndex)
+  const filteredTasks =
+    rangeError == null
+      ? tasks.filter((task) => {
+          const created = new Date(task.createdAt)
+          if (startDateTime && created < startDateTime) return false
+          if (endDateTime && created > endDateTime) return false
+          return true
+        })
+      : []
+
+  useEffect(() => {
+    if (startDateTime && endDateTime && startDateTime > endDateTime) {
+      setRangeError("Start time must be before end time")
+    } else {
+      setRangeError(null)
+    }
+    setPage(1)
+  }, [startDateTime, endDateTime])
+
+  const { safePage, startIndex, endIndex, totalPages } = paginate(filteredTasks.length, PAGE_SIZE, page)
+  const pagedTasks = filteredTasks.slice(startIndex, endIndex)
   const alertPointById = new Map(tai8AlertPoints.map((point) => [point.id, point]))
 
   return (
@@ -27,13 +50,41 @@ export default function TasksPage() {
           <h1 className="text-3xl font-bold">Tasks</h1>
           <p className="text-muted-foreground">Manage monitoring tasks and view their status</p>
         </div>
-        <Link href="/tasks/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            New Task
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <div className="w-full">
+            <CardContent className="flex flex-col gap-3 p-3 sm:flex-row sm:items-end sm:justify-between">
+              {/* 左：Start/End */}
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-medium text-muted-foreground">Start</span>
+                  <DateTimePicker value={startDateTime} onChange={setStartDateTime} />
+                </div>
+
+                <span className="text-muted-foreground sm:pb-2">to</span>
+
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-medium text-muted-foreground">End</span>
+                  <DateTimePicker value={endDateTime} onChange={setEndDateTime} />
+                </div>
+              </div>
+
+              {/* 右：New Task */}
+              <Link href="/tasks/new" className="sm:shrink-0">
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Task
+                </Button>
+              </Link>
+            </CardContent>
+          </div>
+        </div>
       </div>
+
+      {rangeError && (
+        <Card className="border-destructive/30 bg-destructive/5">
+          <CardContent className="py-3 text-sm text-destructive">{rangeError}</CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4">
         {tasks.length === 0 ? (
@@ -46,6 +97,15 @@ export default function TasksPage() {
                   Create Task
                 </Button>
               </Link>
+            </CardContent>
+          </Card>
+        ) : filteredTasks.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <p className="text-muted-foreground mb-2">No tasks in this date range.</p>
+              <p className="text-xs text-muted-foreground">
+                Adjust the dates to see tasks created in that period.
+              </p>
             </CardContent>
           </Card>
         ) : (
@@ -193,7 +253,7 @@ export default function TasksPage() {
       </div>
 
       <PaginationControls
-        totalItems={tasks.length}
+        totalItems={filteredTasks.length}
         pageSize={PAGE_SIZE}
         page={safePage}
         onPageChange={setPage}

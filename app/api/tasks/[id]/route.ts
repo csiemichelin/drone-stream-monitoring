@@ -14,7 +14,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const updates = await request.json()
+  const { startAt, ...updates } = await request.json()
 
   const task = dataStore.updateTask(id, updates)
 

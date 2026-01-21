@@ -15,7 +15,7 @@ import { Loader2, Star } from "lucide-react"
 import type { Stream, NotificationGroup, Task } from "@/lib/types"
 
 type TaskFormProps = {
-  task?: Pick<Task, "id" | "name" | "description" | "boundStreamIds" | "notifyGroupIds">
+  task?: Pick<Task, "id" | "name" | "description" | "boundStreamIds" | "notifyGroupIds" | "startAt" | "createdAt">
 }
 
 export function TaskForm({ task }: TaskFormProps) {
@@ -114,6 +114,22 @@ export function TaskForm({ task }: TaskFormProps) {
               rows={3}
             />
           </div>
+
+          {task && (
+            <div className="space-y-2">
+              <Label>Start Time</Label>
+              <Input
+                readOnly
+                value={
+                  task.startAt
+                    ? new Date(task.startAt).toLocaleString()
+                    : task.createdAt
+                      ? new Date(task.createdAt).toLocaleString()
+                      : "—"
+                }
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 

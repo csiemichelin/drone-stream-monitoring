@@ -25,6 +25,8 @@ export default async function EditTaskPage({ params }: EditTaskPageProps) {
           id: task.id,
           name: task.name,
           description: task.description,
+          startAt: task.startAt,
+          createdAt: task.createdAt,
           boundStreamIds: task.boundStreamIds,
           notifyGroupIds: task.notifyGroupIds,
         }}

@@ -32,6 +32,7 @@ export async function POST(request: Request) {
       status: "idle",
       createdBy: user.id,
       createdAt: new Date(),
+      startAt: new Date(),
       boundStreamIds,
       notifyGroupIds: notifyGroupIds || [],
       metrics: {
