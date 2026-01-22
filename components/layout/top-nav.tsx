@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -40,14 +40,49 @@ const navItems = [
 export function TopNav({ userName }: { userName: string }) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [alerts, setAlerts] = useState<Alert[]>([])
-  const unreadCount = alerts.filter((a) => a.status === "open").length
+  type AlertMenuItem = Pick<
+    Alert,
+    "id" | "severity" | "hazardType" | "createdAt" | "description" | "reason" | "status"
+  >
+  const [alerts, setAlerts] = useState<AlertMenuItem[]>([])
+  const [badgeCount, setBadgeCount] = useState(0)
+  const [shakeBell, setShakeBell] = useState(false)
+  const shakeTimeoutRef = useRef<number | null>(null)
 
   useEffect(() => {
-    fetch("/api/alerts?status=open&limit=5")
+    fetch("/api/alerts?status=open&limit=10")
       .then((res) => res.json())
-      .then((data) => setAlerts(data.alerts || []))
+      .then((data) => {
+        const nextAlerts = (data.alerts || []) as AlertMenuItem[]
+        setAlerts(nextAlerts.slice(0, 10))
+      })
       .catch(() => setAlerts([]))
+  }, [])
+
+  useEffect(() => {
+    const handleToastAlert = (event: Event) => {
+      const detail = (event as CustomEvent<AlertMenuItem>).detail
+      if (!detail) return
+
+      setAlerts((prev) => [detail, ...prev.filter((alert) => alert.id !== detail.id)].slice(0, 10))
+      setBadgeCount((prev) => prev + 1)
+      setShakeBell(true)
+
+      if (shakeTimeoutRef.current) {
+        window.clearTimeout(shakeTimeoutRef.current)
+      }
+      shakeTimeoutRef.current = window.setTimeout(() => {
+        setShakeBell(false)
+      }, 700)
+    }
+
+    window.addEventListener("alert.toast", handleToastAlert)
+    return () => {
+      window.removeEventListener("alert.toast", handleToastAlert)
+      if (shakeTimeoutRef.current) {
+        window.clearTimeout(shakeTimeoutRef.current)
+      }
+    }
   }, [])
 
   const renderNavLinks = (variant: "desktop" | "mobile") =>
@@ -96,14 +131,14 @@ export function TopNav({ userName }: { userName: string }) {
         <div className="flex items-center gap-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className={cn("relative", shakeBell && "alert-shake")}>
                 <Megaphone className="h-5 w-5" />
-                {unreadCount > 0 && (
+                {badgeCount > 0 && (
                   <Badge
                     className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
                     variant="destructive"
                   >
-                    {unreadCount > 9 ? "9+" : unreadCount}
+                    {badgeCount > 10 ? "10+" : badgeCount}
                   </Badge>
                 )}
               </Button>
@@ -114,29 +149,33 @@ export function TopNav({ userName }: { userName: string }) {
               {alerts.length === 0 ? (
                 <div className="p-3 text-sm text-muted-foreground text-center">No new alerts</div>
               ) : (
-                alerts.slice(0, 5).map((alert) => (
-                  <DropdownMenuItem key={alert.id} className="flex flex-col items-start gap-1 p-3">
-                    <div className="flex items-center gap-2 w-full">
-                      <Badge
-                        variant={
-                          alert.severity === "critical"
-                            ? "destructive"
-                            : alert.severity === "warn"
-                              ? "outline"
-                              : "secondary"
-                        }
-                      >
-                        {alert.severity}
-                      </Badge>
-                      <Badge variant="outline">{alert.hazardType.replace(/_/g, " ")}</Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(alert.createdAt).toLocaleTimeString()}
-                      </span>
-                    </div>
-                    <div className="text-sm font-medium">{alert.reason}</div>
-                    <div className="text-xs text-muted-foreground line-clamp-1">{alert.description}</div>
-                  </DropdownMenuItem>
-                ))
+                <div className="max-h-112 overflow-y-auto">
+                  {alerts.slice(0, 10).map((alert) => (
+                    <DropdownMenuItem key={alert.id} className="flex flex-col items-start gap-1 p-3">
+                      <div className="flex items-center gap-2 w-full">
+                        <Badge
+                          variant={
+                            alert.severity === "critical"
+                              ? "destructive"
+                              : alert.severity === "warn"
+                                ? "outline"
+                                : "secondary"
+                          }
+                        >
+                          {alert.severity}
+                        </Badge>
+                        <Badge variant="outline">{alert.hazardType.replace(/_/g, " ")}</Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(alert.createdAt).toLocaleTimeString()}
+                        </span>
+                      </div>
+                      <div className="text-sm font-medium">{alert.reason}</div>
+                      <div className="text-xs text-muted-foreground line-clamp-1">
+                        {alert.description}
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
+                </div>
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>

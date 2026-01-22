@@ -205,7 +205,7 @@ export default function OverviewPage() {
               {/* View All 固定在底部 */}
               <Link href="/missions" className="mt-3">
                 <Button variant="outline" className="w-full bg-transparent">
-                  查看所有 Mission
+                  查看所有任務
                 </Button>
               </Link>
             </CardContent>

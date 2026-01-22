@@ -38,15 +38,8 @@ export default function StreamDetailPage() {
         .then((data) => {
           setLatestAnalysis(data.analysis)
 
-          // If it's an alert, show toast
           if (data.alert) {
-            toast({
-              title: `Alert: ${data.alert.hazardType.replace(/_/g, " ")}`,
-              description: data.alert.description,
-              variant: data.alert.severity === "critical" ? "destructive" : "default",
-            })
-
-            // Refresh alerts
+            // Refresh alerts when a new one is created.
             fetch(`/api/alerts?streamId=${streamId}`)
               .then((res) => res.json())
               .then((data) => setAlerts(data.alerts || []))
@@ -57,7 +50,7 @@ export default function StreamDetailPage() {
     }, 10000)
 
     return () => clearInterval(interval)
-  }, [streamId, toast])
+  }, [streamId])
 
   const handleCapture = (dataUrl: string) => {
     toast({

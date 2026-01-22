@@ -19,7 +19,7 @@ import { useState } from "react"
 
 const navigation = [
   { name: "總覽", href: "/", icon: LayoutDashboard },
-  { name: "Missions", href: "/missions", icon: ListTodo },
+  { name: "任務", href: "/missions", icon: ListTodo },
   { name: "Streams", href: "/streams", icon: Radio },
   { name: "Alerts", href: "/alerts", icon: Bell },
   { name: "Groups", href: "/groups", icon: Users },
