@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server"
 import { dataStore } from "@/lib/store"
 import { getCurrentUser } from "@/lib/auth"
-import type { Task } from "@/lib/types"
+import type { Mission } from "@/lib/types"
 
 export async function GET() {
   try {
-    const tasks = dataStore.getTasks()
-    return NextResponse.json({ tasks })
+    const missions = dataStore.getMissions()
+    return NextResponse.json({ missions })
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch tasks" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to fetch missions" }, { status: 500 })
   }
 }
 
@@ -25,8 +25,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Name and at least one stream are required" }, { status: 400 })
     }
 
-    const task: Task = {
-      id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    const mission: Mission = {
+      id: `mission-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       name,
       description,
       status: "idle",
@@ -40,10 +40,10 @@ export async function POST(request: Request) {
       }
     }
 
-    dataStore.createTask(task)
+    dataStore.createMission(mission)
 
-    return NextResponse.json({ task }, { status: 201 })
+    return NextResponse.json({ mission }, { status: 201 })
   } catch (error) {
-    return NextResponse.json({ error: "Failed to create task" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to create mission" }, { status: 500 })
   }
 }

@@ -23,14 +23,14 @@ export async function GET(request: Request) {
     let alert: Alert | null = null
 
     if (shouldAlert) {
-      // Find tasks monitoring this stream
-      const tasks = dataStore.getTasks().filter((t) => t.boundStreamIds.includes(streamId) && t.status === "running")
+      // Find missions monitoring this stream
+      const missions = dataStore.getMissions().filter((t) => t.boundStreamIds.includes(streamId) && t.status === "running")
 
-      // Create alert for each task
-      for (const task of tasks) {
+      // Create alert for each mission
+      for (const mission of missions) {
         const newAlert: Alert = {
           id: `alert-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          taskId: task.id,
+          missionId: mission.id,
           streamId,
           createdAt: new Date(),
           severity: analysis.severity,
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
           occurredAt: analysis.occurredAt,
           analysisRaw: analysis,
           status: "open",
-          notifications: task.notifyGroupIds.map((groupId) => ({
+          notifications: mission.notifyGroupIds.map((groupId) => ({
             groupId,
             sentAt: new Date(),
             channel: "demo-notification",

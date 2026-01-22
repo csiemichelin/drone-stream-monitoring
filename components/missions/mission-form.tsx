@@ -12,34 +12,34 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Loader2, Star } from "lucide-react"
-import type { Stream, NotificationGroup, Task } from "@/lib/types"
+import type { Stream, NotificationGroup, Mission } from "@/lib/types"
 
-type TaskFormProps = {
-  task?: Pick<Task, "id" | "name" | "description" | "boundStreamIds" | "notifyGroupIds" | "startAt" | "createdAt">
+type MissionFormProps = {
+  mission?: Pick<Mission, "id" | "name" | "description" | "boundStreamIds" | "notifyGroupIds" | "startAt" | "createdAt">
 }
 
-export function TaskForm({ task }: TaskFormProps) {
+export function MissionForm({ mission }: MissionFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [streams, setStreams] = useState<Stream[]>([])
   const [groups, setGroups] = useState<NotificationGroup[]>([])
 
-  const [name, setName] = useState(task?.name ?? "")
-  const [description, setDescription] = useState(task?.description ?? "")
-  const [selectedStreams, setSelectedStreams] = useState<string[]>(task?.boundStreamIds ?? [])
-  const [selectedGroups, setSelectedGroups] = useState<string[]>(task?.notifyGroupIds ?? [])
+  const [name, setName] = useState(mission?.name ?? "")
+  const [description, setDescription] = useState(mission?.description ?? "")
+  const [selectedStreams, setSelectedStreams] = useState<string[]>(mission?.boundStreamIds ?? [])
+  const [selectedGroups, setSelectedGroups] = useState<string[]>(mission?.notifyGroupIds ?? [])
   const [rtspName, setRtspName] = useState("")
   const [rtspUrl, setRtspUrl] = useState("")
   const [addingRtsp, setAddingRtsp] = useState(false)
 
-  const isEdit = Boolean(task)
+  const isEdit = Boolean(mission)
 
   useEffect(() => {
-    setName(task?.name ?? "")
-    setDescription(task?.description ?? "")
-    setSelectedStreams(task?.boundStreamIds ?? [])
-    setSelectedGroups(task?.notifyGroupIds ?? [])
-  }, [task])
+    setName(mission?.name ?? "")
+    setDescription(mission?.description ?? "")
+    setSelectedStreams(mission?.boundStreamIds ?? [])
+    setSelectedGroups(mission?.notifyGroupIds ?? [])
+  }, [mission])
 
   useEffect(() => {
     // Fetch streams and groups
@@ -56,7 +56,7 @@ export function TaskForm({ task }: TaskFormProps) {
     setLoading(true)
 
     try {
-      const endpoint = isEdit ? `/api/tasks/${task?.id}` : "/api/tasks"
+      const endpoint = isEdit ? `/api/missions/${mission?.id}` : "/api/missions"
       const method = isEdit ? "PATCH" : "POST"
 
       const res = await fetch(endpoint, {
@@ -71,12 +71,12 @@ export function TaskForm({ task }: TaskFormProps) {
       })
 
       if (res.ok) {
-        const redirectTo = isEdit ? `/tasks/${task?.id}` : "/tasks"
+        const redirectTo = isEdit ? `/missions/${mission?.id}` : "/missions"
         router.push(redirectTo)
         router.refresh()
       }
     } catch (error) {
-      console.error("Failed to save task:", error)
+      console.error("Failed to save mission:", error)
     } finally {
       setLoading(false)
     }
@@ -89,12 +89,12 @@ export function TaskForm({ task }: TaskFormProps) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Task Details</CardTitle>
-          <CardDescription>Basic information about the monitoring task</CardDescription>
+          <CardTitle>Mission Details</CardTitle>
+          <CardDescription>Basic information about the monitoring mission</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Task Name *</Label>
+            <Label htmlFor="name">Mission Name *</Label>
             <Input
               id="name"
               value={name}
@@ -110,21 +110,21 @@ export function TaskForm({ task }: TaskFormProps) {
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional description of the task"
+              placeholder="Optional description of the mission"
               rows={3}
             />
           </div>
 
-          {task && (
+          {mission && (
             <div className="space-y-2">
               <Label>Start Time</Label>
               <Input
                 readOnly
                 value={
-                  task.startAt
-                    ? new Date(task.startAt).toLocaleString()
-                    : task.createdAt
-                      ? new Date(task.createdAt).toLocaleString()
+                  mission.startAt
+                    ? new Date(mission.startAt).toLocaleString()
+                    : mission.createdAt
+                      ? new Date(mission.createdAt).toLocaleString()
                       : "—"
                 }
               />
@@ -136,7 +136,7 @@ export function TaskForm({ task }: TaskFormProps) {
       <Card>
         <CardHeader>
           <CardTitle>Bind Streams</CardTitle>
-          <CardDescription>Select which streams to monitor in this task</CardDescription>
+          <CardDescription>Select which streams to monitor in this mission</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-2">
@@ -197,7 +197,7 @@ export function TaskForm({ task }: TaskFormProps) {
                 "Add RTSP Stream"
               )}
             </Button>
-            <p className="text-xs text-muted-foreground self-center">Add RTSP streams to bind them to this task.</p>
+            <p className="text-xs text-muted-foreground self-center">Add RTSP streams to bind them to this mission.</p>
           </div>
 
           <div className="space-y-2">
@@ -338,7 +338,7 @@ export function TaskForm({ task }: TaskFormProps) {
               {isEdit ? "Saving..." : "Creating..."}
             </>
           ) : (
-            isEdit ? "Update Task" : "Create Task"
+            isEdit ? "Update Mission" : "Create Mission"
           )}
         </Button>
         <Button type="button" variant="outline" onClick={() => router.back()}>

@@ -20,24 +20,24 @@ const Tai8D3SvgMap = dynamic(() => import("@/components/ui/tai8-d3svg-map"), {
   ),
 })
 
-type Task = ReturnType<typeof dataStore.getTasks>[number]
+type Mission = ReturnType<typeof dataStore.getMissions>[number]
 type Stream = ReturnType<typeof dataStore.getStreams>[number]
 type Alert = ReturnType<typeof dataStore.getAlerts>[number]
 
 export default function OverviewPage() {
   // ✅ 先用空陣列，確保 server/client 第一次 render 一致
-  const [tasks, setTasks] = useState<Task[]>([])
+  const [missions, setMissions] = useState<Mission[]>([])
   const [streams, setStreams] = useState<Stream[]>([])
   const [alerts, setAlerts] = useState<Alert[]>([])
 
   // ✅ mount 後再從 dataStore 取資料
   useEffect(() => {
-    setTasks(dataStore.getTasks())
+    setMissions(dataStore.getMissions())
     setStreams(dataStore.getStreams())
     setAlerts(dataStore.getAlerts())
   }, [])
 
-  const runningTasks = useMemo(() => tasks.filter((t) => t.status === "running").length, [tasks])
+  const runningMissions = useMemo(() => missions.filter((t) => t.status === "running").length, [missions])
   const onlineStreams = useMemo(() => streams.filter((s) => s.status === "online").length, [streams])
   const openAlerts = useMemo(() => alerts.filter((a) => a.status === "open").length, [alerts])
   const criticalAlerts = useMemo(
@@ -46,12 +46,12 @@ export default function OverviewPage() {
   )
 
   const recentAlerts = useMemo(() => alerts.slice(0, 5), [alerts])
-  const runningTaskList = useMemo(() => tasks.filter((t) => t.status === "running").slice(0, 6), [tasks])
+  const runningMissionList = useMemo(() => missions.filter((t) => t.status === "running").slice(0, 6), [missions])
   const activeStreams = useMemo(() => streams.filter((s) => s.status === "online").slice(0, 4), [streams])
 
-  const MAX_VISIBLE_TASKS = 2
+  const MAX_VISIBLE_MISSIONS = 2
   const MAX_VISIBLE_STREAMS = 2
-  const visibleTasks = runningTaskList.slice(0, MAX_VISIBLE_TASKS)
+  const visibleMissions = runningMissionList.slice(0, MAX_VISIBLE_MISSIONS)
   const visibleStreams = activeStreams.slice(0, MAX_VISIBLE_STREAMS)
 
   const [showFullyBlocked, setShowFullyBlocked] = useState(true)
@@ -79,17 +79,17 @@ export default function OverviewPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base font-medium text-foreground/75">當前任務</CardTitle>
+            <CardTitle className="text-base font-medium text-foreground/75">當前 Mission</CardTitle>
             <span className="h-9 w-9 rounded-full bg-primary/20 text-primary grid place-items-center shadow-sm">
               <ListTodo className="h-5 w-5" />
             </span>
           </CardHeader>
           <CardContent className="pb-2">
-            <div className="text-3xl font-bold text-primary">{runningTasks}</div>
+            <div className="text-3xl font-bold text-primary">{runningMissions}</div>
             <div className="mt-1 flex items-center justify-between gap-3">
-              <p className="text-xs text-foreground/60">筆巡檢任務執行中</p>
+              <p className="text-xs text-foreground/60">筆巡檢 Mission 執行中</p>
               <Link
-                href="/tasks"
+                href="/missions"
                 className="group inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-primary"
               >
                 <span className="underline-offset-2 group-hover:underline">查看更多</span>
@@ -171,30 +171,30 @@ export default function OverviewPage() {
         <div className="lg:col-span-1 flex flex-col space-y-4">
           <Card className="flex-1 flex flex-col">
             <CardHeader>
-              <CardTitle className="text-base font-medium text-foreground/75">巡檢任務</CardTitle>
-              <CardDescription className="text-xs text-foreground/60">任務執行中</CardDescription>
+              <CardTitle className="text-base font-medium text-foreground/75">巡檢 Mission</CardTitle>
+              <CardDescription className="text-xs text-foreground/60">Mission 執行中</CardDescription>
             </CardHeader>
 
             <CardContent className="flex-1 flex flex-col min-h-0">
               {/* 列表區：用 gap 形成間距 */}
               <div className="flex flex-col gap-3">
-                {visibleTasks.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">目前沒有進行中任務</p>
+                {visibleMissions.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">目前沒有進行中 Mission</p>
                 ) : (
-                  visibleTasks.map((task) => (
-                    <Link key={task.id} href={`/tasks/${task.id}`}>
+                  visibleMissions.map((mission) => (
+                    <Link key={mission.id} href={`/missions/${mission.id}`}>
                       <div className="p-3 rounded-lg border bg-card hover:bg-accent transition-colors cursor-pointer">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-sm font-medium truncate">{task.name}</p>
+                          <p className="text-sm font-medium truncate">{mission.name}</p>
                           <Badge variant="default" className="text-[10px]">Running</Badge>
                         </div>
 
                         <p className="text-xs text-muted-foreground line-clamp-2 pt-2">
-                          {task.description || "No description"}
+                          {mission.description || "No description"}
                         </p>
 
                         <p className="text-[11px] text-muted-foreground mt-1">
-                          開始時間：{task.startAt ? new Date(task.startAt).toLocaleString() : "N/A"}
+                          開始時間：{mission.startAt ? new Date(mission.startAt).toLocaleString() : "N/A"}
                         </p>
                       </div>
                     </Link>
@@ -203,9 +203,9 @@ export default function OverviewPage() {
               </div>
 
               {/* View All 固定在底部 */}
-              <Link href="/tasks" className="mt-3">
+              <Link href="/missions" className="mt-3">
                 <Button variant="outline" className="w-full bg-transparent">
-                  查看所有任務
+                  查看所有 Mission
                 </Button>
               </Link>
             </CardContent>

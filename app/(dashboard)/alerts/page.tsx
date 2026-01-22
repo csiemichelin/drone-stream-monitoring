@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DateTimePicker } from "@/components/ui/date-time-picker"
 import { PaginationControls, paginate } from "@/components/ui/pagination"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { Alert, Stream, Task } from "@/lib/types"
+import type { Alert, Stream, Mission } from "@/lib/types"
 
 const PAGE_SIZE = 6
 
@@ -17,9 +17,9 @@ export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [riskFilter, setRiskFilter] = useState<string>("all")
   const [hazardFilter, setHazardFilter] = useState<string>("all")
-  const [taskFilter, setTaskFilter] = useState<string>("all")
+  const [missionFilter, setMissionFilter] = useState<string>("all")
   const [streamFilter, setStreamFilter] = useState<string>("all")
-  const [tasks, setTasks] = useState<Task[]>([])
+  const [missions, setMissions] = useState<Mission[]>([])
   const [streams, setStreams] = useState<Stream[]>([])
   const [page, setPage] = useState(1)
   const [startDateTime, setStartDateTime] = useState<Date | null>(() => new Date("2000-01-01T00:00:00Z"))
@@ -28,16 +28,16 @@ export default function AlertsPage() {
 
   useEffect(() => {
     fetchAlerts()
-  }, [riskFilter, hazardFilter, taskFilter, streamFilter])
+  }, [riskFilter, hazardFilter, missionFilter, streamFilter])
 
   useEffect(() => {
     setPage(1)
-  }, [riskFilter, hazardFilter, taskFilter, streamFilter, startDateTime, endDateTime])
+  }, [riskFilter, hazardFilter, missionFilter, streamFilter, startDateTime, endDateTime])
 
   useEffect(() => {
-    fetch("/api/tasks")
+    fetch("/api/missions")
       .then((res) => res.json())
-      .then((data) => setTasks(data.tasks || []))
+      .then((data) => setMissions(data.missions || []))
       .catch(console.error)
 
     fetch("/api/streams")
@@ -51,7 +51,7 @@ export default function AlertsPage() {
     if (riskFilter === "high") params.append("severity", "critical")
     if (riskFilter === "medium") params.append("severity", "warn")
     if (hazardFilter !== "all") params.append("hazardType", hazardFilter)
-    if (taskFilter !== "all") params.append("taskId", taskFilter)
+    if (missionFilter !== "all") params.append("missionId", missionFilter)
     if (streamFilter !== "all") params.append("streamId", streamFilter)
 
     fetch(`/api/alerts?${params}`)
@@ -188,16 +188,16 @@ export default function AlertsPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-sm text-muted-foreground">Task:</label>
-            <Select value={taskFilter} onValueChange={setTaskFilter}>
+            <label className="text-sm text-muted-foreground">Mission:</label>
+            <Select value={missionFilter} onValueChange={setMissionFilter}>
               <SelectTrigger className="w-56">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tasks</SelectItem>
-                {tasks.map((task) => (
-                  <SelectItem key={task.id} value={task.id}>
-                    {task.name}
+                <SelectItem value="all">All Missions</SelectItem>
+                {missions.map((mission) => (
+                  <SelectItem key={mission.id} value={mission.id}>
+                    {mission.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -223,7 +223,7 @@ export default function AlertsPage() {
 
           {(riskFilter !== "all" ||
             hazardFilter !== "all" ||
-            taskFilter !== "all" ||
+            missionFilter !== "all" ||
             streamFilter !== "all") && (
             <button
               type="button"
@@ -231,7 +231,7 @@ export default function AlertsPage() {
               onClick={() => {
                 setRiskFilter("all")
                 setHazardFilter("all")
-                setTaskFilter("all")
+                setMissionFilter("all")
                 setStreamFilter("all")
                 setStartDateTime(new Date("2000-01-01T00:00:00Z"))
                 setEndDateTime(new Date())
@@ -306,8 +306,8 @@ export default function AlertsPage() {
                       {alert.hasPeople && <span>• People detected</span>}
                       {alert.hasVehicles && <span>• Vehicles detected</span>}
                       <span>
-                        • Task:{" "}
-                        <Link href={`/tasks/${alert.taskId}`} className="text-primary hover:underline">
+                        • Mission:{" "}
+                        <Link href={`/missions/${alert.missionId}`} className="text-primary hover:underline">
                           View
                         </Link>
                       </span>

@@ -8,11 +8,11 @@ export async function POST(request: Request, { params }: { params: { id: string 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 })
   }
 
-  const task = dataStore.transitionTask(params.id, action, data)
+  const mission = dataStore.transitionMission(params.id, action, data)
 
-  if (!task) {
-    return NextResponse.json({ error: "Task not found" }, { status: 404 })
+  if (!mission) {
+    return NextResponse.json({ error: "Mission not found" }, { status: 404 })
   }
 
-  return NextResponse.json({ task })
+  return NextResponse.json({ mission })
 }

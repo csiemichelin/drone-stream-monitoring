@@ -6,21 +6,21 @@ import { Button } from "@/components/ui/button"
 import { Play, Pause, Square, Radio, AlertTriangle, MapPin } from "lucide-react"
 import Link from "next/link"
 
-interface TaskDetailPageProps {
+interface MissionDetailPageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
+export default async function MissionDetailPage({ params }: MissionDetailPageProps) {
   const { id } = await params
-  const task = dataStore.getTask(id)
+  const mission = dataStore.getMission(id)
 
-  if (!task) {
+  if (!mission) {
     notFound()
   }
 
-  const streams = task.boundStreamIds.map((sid) => dataStore.getStream(sid)).filter(Boolean)
-  const groups = task.notifyGroupIds.map((gid) => dataStore.getGroup(gid)).filter(Boolean)
-  const alerts = dataStore.getAlerts({ taskId: id })
+  const streams = mission.boundStreamIds.map((sid) => dataStore.getStream(sid)).filter(Boolean)
+  const groups = mission.notifyGroupIds.map((gid) => dataStore.getGroup(gid)).filter(Boolean)
+  const alerts = dataStore.getAlerts({ missionId: id })
   const recentAlerts = alerts.slice(0, 10)
 
   return (
@@ -29,47 +29,47 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold">{task.name}</h1>
+            <h1 className="text-3xl font-bold">{mission.name}</h1>
             <Badge
               variant={
-                task.status === "running"
+                mission.status === "running"
                   ? "default"
-                  : task.status === "ended"
+                  : mission.status === "ended"
                     ? "secondary"
-                    : task.status === "paused"
+                    : mission.status === "paused"
                       ? "outline"
                       : "secondary"
               }
             >
-              {task.status}
+              {mission.status}
             </Badge>
           </div>
-          {task.description && <p className="text-muted-foreground">{task.description}</p>}
+          {mission.description && <p className="text-muted-foreground">{mission.description}</p>}
           <div className="flex flex-wrap gap-4 text-xs text-muted-foreground mt-2">
-            <span>Created: {new Date(task.createdAt).toLocaleString()}</span>
-            {task.startAt && <span>Started: {new Date(task.startAt).toLocaleString()}</span>}
-            {task.endAt && <span>Ended: {new Date(task.endAt).toLocaleString()}</span>}
+            <span>Created: {new Date(mission.createdAt).toLocaleString()}</span>
+            {mission.startAt && <span>Started: {new Date(mission.startAt).toLocaleString()}</span>}
+            {mission.endAt && <span>Ended: {new Date(mission.endAt).toLocaleString()}</span>}
           </div>
         </div>
 
         <div className="flex gap-2">
-          {task.status === "idle" && (
-            <form action={`/api/tasks/${task.id}/start`} method="POST">
+          {mission.status === "idle" && (
+            <form action={`/api/missions/${mission.id}/start`} method="POST">
               <Button type="submit">
                 <Play className="mr-2 h-4 w-4" />
                 Start
               </Button>
             </form>
           )}
-          {task.status === "running" && (
+          {mission.status === "running" && (
             <>
-              <form action={`/api/tasks/${task.id}/pause`} method="POST">
+              <form action={`/api/missions/${mission.id}/pause`} method="POST">
                 <Button type="submit" variant="outline">
                   <Pause className="mr-2 h-4 w-4" />
                   Pause
                 </Button>
               </form>
-              <form action={`/api/tasks/${task.id}/stop`} method="POST">
+              <form action={`/api/missions/${mission.id}/stop`} method="POST">
                 <Button type="submit" variant="destructive">
                   <Square className="mr-2 h-4 w-4" />
                   Stop
@@ -77,15 +77,15 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
               </form>
             </>
           )}
-          {task.status === "paused" && (
+          {mission.status === "paused" && (
             <>
-              <form action={`/api/tasks/${task.id}/start`} method="POST">
+              <form action={`/api/missions/${mission.id}/start`} method="POST">
                 <Button type="submit">
                   <Play className="mr-2 h-4 w-4" />
                   Resume
                 </Button>
               </form>
-              <form action={`/api/tasks/${task.id}/stop`} method="POST">
+              <form action={`/api/missions/${mission.id}/stop`} method="POST">
                 <Button type="submit" variant="destructive">
                   <Square className="mr-2 h-4 w-4" />
                   Stop
@@ -103,7 +103,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Alerts</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-primary">{task.metrics.alertCountTotal}</div>
+            <div className="text-3xl font-bold text-primary">{mission.metrics.alertCountTotal}</div>
           </CardContent>
         </Card>
 
@@ -112,7 +112,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
             <CardTitle className="text-sm font-medium text-muted-foreground">Bound Streams</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{task.boundStreamIds.length}</div>
+            <div className="text-3xl font-bold">{mission.boundStreamIds.length}</div>
           </CardContent>
         </Card>
 
@@ -121,7 +121,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
             <CardTitle className="text-sm font-medium text-muted-foreground">Notify Groups</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{task.notifyGroupIds.length}</div>
+            <div className="text-3xl font-bold">{mission.notifyGroupIds.length}</div>
           </CardContent>
         </Card>
 
@@ -131,10 +131,10 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">
-              {task.startAt && task.endAt
-                ? `${Math.round((new Date(task.endAt).getTime() - new Date(task.startAt).getTime()) / 60000)}m`
-                : task.startAt
-                  ? `${Math.round((Date.now() - new Date(task.startAt).getTime()) / 60000)}m`
+              {mission.startAt && mission.endAt
+                ? `${Math.round((new Date(mission.endAt).getTime() - new Date(mission.startAt).getTime()) / 60000)}m`
+                : mission.startAt
+                  ? `${Math.round((Date.now() - new Date(mission.startAt).getTime()) / 60000)}m`
                   : "-"}
             </div>
           </CardContent>
@@ -146,7 +146,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
         <Card>
           <CardHeader>
             <CardTitle>Bound Streams</CardTitle>
-            <CardDescription>Streams monitored by this task</CardDescription>
+            <CardDescription>Streams monitored by this mission</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {streams.length === 0 ? (
@@ -232,7 +232,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
       <Card>
         <CardHeader>
           <CardTitle>Alert History</CardTitle>
-          <CardDescription>Recent alerts from this task</CardDescription>
+          <CardDescription>Recent alerts from this mission</CardDescription>
         </CardHeader>
         <CardContent>
           {recentAlerts.length === 0 ? (
@@ -289,7 +289,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
       </Card>
 
       {/* Telemetry */}
-      {task.currentTelemetry && (
+      {mission.currentTelemetry && (
         <Card>
           <CardHeader>
             <CardTitle>Current Telemetry</CardTitle>
@@ -297,34 +297,34 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {task.currentTelemetry.lat && (
+              {mission.currentTelemetry.lat && (
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Latitude</p>
-                    <p className="text-sm font-mono font-medium">{task.currentTelemetry.lat.toFixed(6)}</p>
+                    <p className="text-sm font-mono font-medium">{mission.currentTelemetry.lat.toFixed(6)}</p>
                   </div>
                 </div>
               )}
-              {task.currentTelemetry.lng && (
+              {mission.currentTelemetry.lng && (
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Longitude</p>
-                    <p className="text-sm font-mono font-medium">{task.currentTelemetry.lng.toFixed(6)}</p>
+                    <p className="text-sm font-mono font-medium">{mission.currentTelemetry.lng.toFixed(6)}</p>
                   </div>
                 </div>
               )}
-              {task.currentTelemetry.altitude && (
+              {mission.currentTelemetry.altitude && (
                 <div>
                   <p className="text-xs text-muted-foreground">Altitude</p>
-                  <p className="text-sm font-mono font-medium">{task.currentTelemetry.altitude}m</p>
+                  <p className="text-sm font-mono font-medium">{mission.currentTelemetry.altitude}m</p>
                 </div>
               )}
-              {task.currentTelemetry.heading && (
+              {mission.currentTelemetry.heading && (
                 <div>
                   <p className="text-xs text-muted-foreground">Heading</p>
-                  <p className="text-sm font-mono font-medium">{task.currentTelemetry.heading} deg</p>
+                  <p className="text-sm font-mono font-medium">{mission.currentTelemetry.heading} deg</p>
                 </div>
               )}
             </div>

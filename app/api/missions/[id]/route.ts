@@ -3,34 +3,34 @@ import { dataStore } from "@/lib/store"
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const task = dataStore.getTask(id)
+  const mission = dataStore.getMission(id)
 
-  if (!task) {
-    return NextResponse.json({ error: "Task not found" }, { status: 404 })
+  if (!mission) {
+    return NextResponse.json({ error: "Mission not found" }, { status: 404 })
   }
 
-  return NextResponse.json({ task })
+  return NextResponse.json({ mission })
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { startAt, ...updates } = await request.json()
 
-  const task = dataStore.updateTask(id, updates)
+  const mission = dataStore.updateMission(id, updates)
 
-  if (!task) {
-    return NextResponse.json({ error: "Task not found" }, { status: 404 })
+  if (!mission) {
+    return NextResponse.json({ error: "Mission not found" }, { status: 404 })
   }
 
-  return NextResponse.json({ task })
+  return NextResponse.json({ mission })
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const deleted = dataStore.deleteTask(id)
+  const deleted = dataStore.deleteMission(id)
 
   if (!deleted) {
-    return NextResponse.json({ error: "Task not found" }, { status: 404 })
+    return NextResponse.json({ error: "Mission not found" }, { status: 404 })
   }
 
   return NextResponse.json({ success: true })

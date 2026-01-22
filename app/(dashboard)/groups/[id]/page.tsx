@@ -18,8 +18,8 @@ export default async function GroupDetailPage({ params }: GroupDetailPageProps) 
     notFound()
   }
 
-  // Find tasks using this group
-  const tasks = dataStore.getTasks().filter((t) => t.notifyGroupIds.includes(id))
+  // Find missions using this group
+  const missions = dataStore.getMissions().filter((t) => t.notifyGroupIds.includes(id))
 
   // Find recent alerts sent to this group
   const alerts = dataStore
@@ -169,38 +169,38 @@ export default async function GroupDetailPage({ params }: GroupDetailPageProps) 
         </Card>
       </div>
 
-      {/* Tasks Using This Group */}
+      {/* Missions Using This Group */}
       <Card>
         <CardHeader>
-          <CardTitle>Tasks Using This Group</CardTitle>
-          <CardDescription>Monitoring tasks configured to notify this group</CardDescription>
+          <CardTitle>Missions Using This Group</CardTitle>
+          <CardDescription>Monitoring missions configured to notify this group</CardDescription>
         </CardHeader>
         <CardContent>
-          {tasks.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No tasks are using this group</p>
+          {missions.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">No missions are using this group</p>
           ) : (
             <div className="space-y-2">
-              {tasks.map((task) => (
-                <Link key={task.id} href={`/tasks/${task.id}`}>
+              {missions.map((mission) => (
+                <Link key={mission.id} href={`/missions/${mission.id}`}>
                   <div className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent transition-colors cursor-pointer">
                     <div>
-                      <p className="text-sm font-medium">{task.name}</p>
+                      <p className="text-sm font-medium">{mission.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {task.metrics.alertCountTotal} alerts • {task.status}
+                        {mission.metrics.alertCountTotal} alerts • {mission.status}
                       </p>
                     </div>
                     <Badge
                       variant={
-                        task.status === "running"
+                        mission.status === "running"
                           ? "default"
-                          : task.status === "ended"
+                          : mission.status === "ended"
                             ? "secondary"
-                            : task.status === "paused"
+                            : mission.status === "paused"
                               ? "outline"
                               : "secondary"
                       }
                     >
-                      {task.status}
+                      {mission.status}
                     </Badge>
                   </div>
                 </Link>

@@ -37,7 +37,7 @@ export async function analyzeFrame(
 
   const analysis: VLMAnalysis = {
     id: `analysis-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    taskId: "",
+    missionId: "",
     streamId,
     timestamp: new Date(),
     road_closed: roadClosed,

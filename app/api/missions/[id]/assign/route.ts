@@ -4,11 +4,11 @@ import { dataStore } from "@/lib/store"
 export async function POST(request: Request, { params }: { params: { id: string } }) {
   const { assignee } = await request.json()
 
-  const task = dataStore.updateTask(params.id, { assignee })
+  const mission = dataStore.updateMission(params.id, { assignee })
 
-  if (!task) {
-    return NextResponse.json({ error: "Task not found" }, { status: 404 })
+  if (!mission) {
+    return NextResponse.json({ error: "Mission not found" }, { status: 404 })
   }
 
-  return NextResponse.json({ task })
+  return NextResponse.json({ mission })
 }

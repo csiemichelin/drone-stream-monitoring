@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const status = searchParams.get("status")
     const severity = searchParams.get("severity")
     const hazardType = searchParams.get("hazardType")
-    const taskId = searchParams.get("taskId")
+    const missionId = searchParams.get("missionId")
     const streamId = searchParams.get("streamId")
     const limit = searchParams.get("limit")
 
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     if (status) filters.status = status.split(",")
     if (severity) filters.severity = severity.split(",")
     if (hazardType) filters.hazardType = hazardType.split(",")
-    if (taskId) filters.taskId = taskId
+    if (missionId) filters.missionId = missionId
     if (streamId) filters.streamId = streamId
 
     let alerts = dataStore.getAlerts(filters)

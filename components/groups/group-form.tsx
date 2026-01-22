@@ -152,7 +152,7 @@ export function GroupForm({ group, mode = "create" }: GroupFormProps) {
             <Checkbox id="favorite" checked={favorite} onCheckedChange={(checked) => setFavorite(checked === true)} />
             <Label htmlFor="favorite" className="flex items-center gap-2 cursor-pointer">
               <Star className={`h-4 w-4 ${favorite ? "fill-warning text-warning" : "text-muted-foreground"}`} />
-              Mark as favorite (quick access in task creation)
+              Mark as favorite (quick access in mission creation)
             </Label>
           </div>
         </CardContent>

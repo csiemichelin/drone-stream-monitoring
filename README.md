@@ -7,13 +7,13 @@ A comprehensive drone stream monitoring platform with VLM-powered road anomaly d
 ### Core Capabilities
 - **Real-time Drone Stream Monitoring** - Monitor multiple video streams from drones
 - **VLM Road Anomaly Detection** - AI-powered detection of road closures, accidents, congestion, obstacles
-- **Annotation Review Workflow** - Professional task queue with status transitions (needs_review → approved/rejected → resolved)
-- **Three-Column Workspace** - Task queue, stream viewer, and fields panel
-- **Live Updates** - Real-time task notifications and updates (simulated WebSocket)
+- **Annotation Review Workflow** - Professional mission queue with status transitions (needs_review → approved/rejected → resolved)
+- **Three-Column Workspace** - Mission queue, stream viewer, and fields panel
+- **Live Updates** - Real-time mission notifications and updates (simulated WebSocket)
 
 ### Pages
-1. **Overview Dashboard** (`/`) - Key metrics, critical tasks, location risk analysis
-2. **Task Workspace** (`/tasks`) - Main annotation interface with three-column layout
+1. **Overview Dashboard** (`/`) - Key metrics, critical missions, location risk analysis
+2. **Mission Workspace** (`/missions`) - Main annotation interface with three-column layout
 3. **Stream Management** (`/streams`) - Monitor and control video streams
 4. **Settings** (`/settings`) - Configure detection thresholds and preferences
 
@@ -36,16 +36,16 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ### Demo Usage
 
-1. **Start Monitoring**: Click "Start Monitoring" on the Tasks page to begin auto-analysis
-2. **Review Tasks**: Select tasks from the left queue to view details
+1. **Start Monitoring**: Click "Start Monitoring" on the Missions page to begin auto-analysis
+2. **Review Missions**: Select missions from the left queue to view details
 3. **Edit Fields**: Modify detection results in the right panel
-4. **Workflow Actions**: Approve, Reject, or Resolve tasks
+4. **Workflow Actions**: Approve, Reject, or Resolve missions
 
 ## Architecture
 
 ### Data Model
 
-#### Task
+#### Mission
 - Status flow: `new → analyzing → needs_review → approved/rejected → resolved`
 - Priority: `low | medium | high`
 - Severity: `info | warning | critical`
@@ -99,19 +99,19 @@ io.on('connection', (socket) => {
 
 ## API Routes
 
-- `GET /api/tasks` - List tasks (with filters)
-- `GET /api/tasks/:id` - Get task details
-- `POST /api/tasks/:id/assign` - Assign task
-- `POST /api/tasks/:id/update-fields` - Update task fields
-- `POST /api/tasks/:id/transition` - Workflow transition
+- `GET /api/missions` - List missions (with filters)
+- `GET /api/missions/:id` - Get mission details
+- `POST /api/missions/:id/assign` - Assign mission
+- `POST /api/missions/:id/update-fields` - Update mission fields
+- `POST /api/missions/:id/transition` - Workflow transition
 - `POST /api/streams/:id/start` - Start stream
 - `POST /api/streams/:id/stop` - Stop stream
 
 ## Keyboard Shortcuts (Planned)
 
-- `J/K` - Navigate tasks
-- `A` - Approve current task
-- `R` - Reject current task
+- `J/K` - Navigate missions
+- `A` - Approve current mission
+- `R` - Reject current mission
 - `E` - Mark as resolved
 
 ## Design Features
@@ -130,8 +130,8 @@ io.on('connection', (socket) => {
 3. **Implement WebSocket** - Real-time updates with Socket.io or Pusher
 4. **Add Authentication** - Protect routes and track reviewers
 5. **Stream Integration** - Support RTSP/RTMP/HLS protocols
-6. **Export Functionality** - CSV/JSON export for tasks and analyses
-7. **Batch Operations** - Multi-select task actions
+6. **Export Functionality** - CSV/JSON export for missions and analyses
+7. **Batch Operations** - Multi-select mission actions
 8. **Advanced Filtering** - Date ranges, custom queries
 9. **Audit Logging** - Complete change history
 10. **Performance Optimization** - Pagination, virtual scrolling

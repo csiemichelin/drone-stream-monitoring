@@ -13,17 +13,17 @@ import { Plus, Play, Pause, Square, Radio, MapPin, Search } from "lucide-react"
 
 const PAGE_SIZE = 5
 
-export default function TasksPage() {
-  const tasks = dataStore.getTasks()
+export default function MissionsPage() {
+  const missions = dataStore.getMissions()
   const [page, setPage] = useState(1)
   const [startDateTime, setStartDateTime] = useState<Date | null>(() => new Date("2000-01-01T00:00:00Z"))
   const [endDateTime, setEndDateTime] = useState<Date | null>(() => new Date())
   const [rangeError, setRangeError] = useState<string | null>(null)
 
-  const filteredTasks =
+  const filteredMissions =
     rangeError == null
-      ? tasks.filter((task) => {
-          const created = new Date(task.createdAt)
+      ? missions.filter((mission) => {
+          const created = new Date(mission.createdAt)
           if (startDateTime && created < startDateTime) return false
           if (endDateTime && created > endDateTime) return false
           return true
@@ -39,16 +39,16 @@ export default function TasksPage() {
     setPage(1)
   }, [startDateTime, endDateTime])
 
-  const { safePage, startIndex, endIndex, totalPages } = paginate(filteredTasks.length, PAGE_SIZE, page)
-  const pagedTasks = filteredTasks.slice(startIndex, endIndex)
+  const { safePage, startIndex, endIndex, totalPages } = paginate(filteredMissions.length, PAGE_SIZE, page)
+  const pagedMissions = filteredMissions.slice(startIndex, endIndex)
   const alertPointById = new Map(tai8AlertPoints.map((point) => [point.id, point]))
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Tasks</h1>
-          <p className="text-muted-foreground">Manage monitoring tasks and view their status</p>
+          <h1 className="text-3xl font-bold">Missions</h1>
+          <p className="text-muted-foreground">Manage monitoring missions and view their status</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="w-full">
@@ -68,11 +68,11 @@ export default function TasksPage() {
                 </div>
               </div>
 
-              {/* 右：New Task */}
-              <Link href="/tasks/new" className="sm:shrink-0">
+              {/* 右：New Mission */}
+              <Link href="/missions/new" className="sm:shrink-0">
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
-                  New Task
+                  New Mission
                 </Button>
               </Link>
             </CardContent>
@@ -87,32 +87,32 @@ export default function TasksPage() {
       )}
 
       <div className="grid gap-4">
-        {tasks.length === 0 ? (
+        {missions.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <p className="text-muted-foreground mb-4">No tasks yet. Create your first monitoring task.</p>
-              <Link href="/tasks/new">
+              <p className="text-muted-foreground mb-4">No missions yet. Create your first monitoring mission.</p>
+              <Link href="/missions/new">
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
-                  Create Task
+                  Create Mission
                 </Button>
               </Link>
             </CardContent>
           </Card>
-        ) : filteredTasks.length === 0 ? (
+        ) : filteredMissions.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <p className="text-muted-foreground mb-2">No tasks in this date range.</p>
+              <p className="text-muted-foreground mb-2">No missions in this date range.</p>
               <p className="text-xs text-muted-foreground">
-                Adjust the dates to see tasks created in that period.
+                Adjust the dates to see missions created in that period.
               </p>
             </CardContent>
           </Card>
         ) : (
-          pagedTasks.map((task) => {
-            const streams = task.boundStreamIds.map((id) => dataStore.getStream(id)).filter(Boolean)
-            const groups = task.notifyGroupIds.map((id) => dataStore.getGroup(id)).filter(Boolean)
-            const alertPointIds = task.metrics.alertPointIds ?? []
+          pagedMissions.map((mission) => {
+            const streams = mission.boundStreamIds.map((id) => dataStore.getStream(id)).filter(Boolean)
+            const groups = mission.notifyGroupIds.map((id) => dataStore.getGroup(id)).filter(Boolean)
+            const alertPointIds = mission.metrics.alertPointIds ?? []
             let fullyBlockedCount = 0
             let partiallyBlockedCount = 0
             alertPointIds.forEach((pointId) => {
@@ -123,38 +123,38 @@ export default function TasksPage() {
             })
 
             return (
-              <Card key={task.id} className="hover:shadow-md transition-shadow">
+              <Card key={mission.id} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <CardTitle className="text-xl">{task.name}</CardTitle>
+                        <CardTitle className="text-xl">{mission.name}</CardTitle>
                         <Badge
                           variant={
-                            task.status === "running"
+                            mission.status === "running"
                               ? "default"
-                              : task.status === "ended"
+                              : mission.status === "ended"
                                 ? "secondary"
-                                : task.status === "paused"
+                                : mission.status === "paused"
                                   ? "outline"
                                   : "secondary"
                           }
                         >
-                          {task.status === "running" && <Play className="mr-1 h-3 w-3" />}
-                          {task.status === "paused" && <Pause className="mr-1 h-3 w-3" />}
-                          {task.status === "ended" && <Square className="mr-1 h-3 w-3" />}
-                          {task.status}
+                          {mission.status === "running" && <Play className="mr-1 h-3 w-3" />}
+                          {mission.status === "paused" && <Pause className="mr-1 h-3 w-3" />}
+                          {mission.status === "ended" && <Square className="mr-1 h-3 w-3" />}
+                          {mission.status}
                         </Badge>
                       </div>
-                      {task.description && <CardDescription className="text-sm">{task.description}</CardDescription>}
+                      {mission.description && <CardDescription className="text-sm">{mission.description}</CardDescription>}
                     </div>
                     <div className="flex gap-2">
-                      <Link href={`/tasks/${task.id}/edit`}>
+                      <Link href={`/missions/${mission.id}/edit`}>
                         <Button variant="secondary" size="sm">
                           Edit
                         </Button>
                       </Link>
-                      <Link href={`/tasks/${task.id}`}>
+                      <Link href={`/missions/${mission.id}`}>
                         <Button variant="outline" size="sm">
                           View Details
                         </Button>
@@ -167,30 +167,30 @@ export default function TasksPage() {
                   <div className="flex flex-wrap gap-4 text-sm">
                     <div>
                       <span className="text-muted-foreground">Created: </span>
-                      <span className="font-medium">{new Date(task.createdAt).toLocaleString()}</span>
+                      <span className="font-medium">{new Date(mission.createdAt).toLocaleString()}</span>
                     </div>
-                    {task.startAt && (
+                    {mission.startAt && (
                       <div>
                         <span className="text-muted-foreground">Started: </span>
-                        <span className="font-medium">{new Date(task.startAt).toLocaleString()}</span>
+                        <span className="font-medium">{new Date(mission.startAt).toLocaleString()}</span>
                       </div>
                     )}
-                    {task.endAt && (
+                    {mission.endAt && (
                       <div>
                         <span className="text-muted-foreground">Ended: </span>
-                        <span className="font-medium">{new Date(task.endAt).toLocaleString()}</span>
+                        <span className="font-medium">{new Date(mission.endAt).toLocaleString()}</span>
                       </div>
                     )}
                   </div>
 
                   {/* Telemetry */}
-                  {task.currentTelemetry && (task.currentTelemetry.lat || task.currentTelemetry.lng) && (
+                  {mission.currentTelemetry && (mission.currentTelemetry.lat || mission.currentTelemetry.lng) && (
                     <div className="flex items-center gap-2 text-sm">
                       <MapPin className="h-4 w-4 text-muted-foreground" />
                       <span className="text-muted-foreground">Current Location:</span>
                       <span className="font-mono">
-                        {task.currentTelemetry.lat?.toFixed(4)}, {task.currentTelemetry.lng?.toFixed(4)}
-                        {task.currentTelemetry.altitude && ` @ ${task.currentTelemetry.altitude}m`}
+                        {mission.currentTelemetry.lat?.toFixed(4)}, {mission.currentTelemetry.lng?.toFixed(4)}
+                        {mission.currentTelemetry.altitude && ` @ ${mission.currentTelemetry.altitude}m`}
                       </span>
                     </div>
                   )}
@@ -218,7 +218,7 @@ export default function TasksPage() {
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
                     <div>
                       <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Alerts</p>
-                      <p className="text-2xl font-bold text-primary">{task.metrics.alertCountTotal}</p>
+                      <p className="text-2xl font-bold text-primary">{mission.metrics.alertCountTotal}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground uppercase tracking-wider">Full Interruptions</p>
@@ -253,14 +253,14 @@ export default function TasksPage() {
       </div>
 
       <PaginationControls
-        totalItems={filteredTasks.length}
+        totalItems={filteredMissions.length}
         pageSize={PAGE_SIZE}
         page={safePage}
         onPageChange={setPage}
-        itemLabel="tasks"
+        itemLabel="missions"
         jumpLabel={`of ${totalPages} pages`}
         preserveScroll
-        visibleCount={pagedTasks.length}
+        visibleCount={pagedMissions.length}
       />
     </div>
   )

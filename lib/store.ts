@@ -3,7 +3,7 @@ import type {
   Session,
   Stream,
   NotificationGroup,
-  Task,
+  Mission,
   Alert,
   VLMAnalysisResult,
   HazardType,
@@ -82,7 +82,7 @@ class DataStore {
   private sessions: Map<string, Session> = new Map()
   private streams: Map<string, Stream> = new Map()
   private groups: Map<string, NotificationGroup> = new Map()
-  private tasks: Map<string, Task> = new Map()
+  private missions: Map<string, Mission> = new Map()
   private alerts: Map<string, Alert> = new Map()
   private settings: Settings = {
     thresholdConfidence: 0.6,
@@ -119,7 +119,7 @@ class DataStore {
     }
     this.users.set(demoUser.id, demoUser)
 
-    // Create mock streams (與台八線 9 路段 Task 一一對應：stream-1 ↔ task_1 ... stream-9 ↔ task_9)
+    // Create mock streams (與台八線 9 路段 Mission 一一對應：stream-1 ↔ mission_1 ... stream-9 ↔ mission_9)
     const tai8Streams: Stream[] = [
       {
         id: "stream-1",
@@ -266,10 +266,10 @@ class DataStore {
       createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
     })
 
-    // Create mock tasks (依台八線 9 路段 + 中斷點統計重新編寫)
-    const tai8Tasks: Task[] = [
+    // Create mock missions (依台八線 9 路段 + 中斷點統計重新編寫)
+    const tai8Missions: Mission[] = [
       {
-        id: "task_1",
+        id: "mission_1",
         name: "台八線 · 東勢 - 天冷路段",
         description: "巡檢範圍：東勢（24.1843, 120.9240）至 天冷（24.1964, 120.8390），全長約 22 公里",
         status: "running",
@@ -286,7 +286,7 @@ class DataStore {
       },
 
       {
-        id: "task_2",
+        id: "mission_2",
         name: "台八線 · 天冷 - 谷關路段",
         description: "巡檢範圍：天冷（24.1964, 120.8390）至 谷關（24.2026, 121.0033），全長約 11 公里",
         status: "running",
@@ -303,7 +303,7 @@ class DataStore {
       },
 
       {
-        id: "task_3",
+        id: "mission_3",
         name: "台八線 · 谷關 - 德基路段",
         description: "巡檢範圍：谷關（24.2026, 121.0033）至 德基（24.2511, 121.1707），全長約 27 公里",
         status: "running",
@@ -320,7 +320,7 @@ class DataStore {
       },
 
       {
-        id: "task_4",
+        id: "mission_4",
         name: "台八線 · 德基 - 梨山路段",
         description: "巡檢範圍：德基（24.2511, 121.1707）至 梨山（24.2541, 121.2529），全長約 35 公里",
         status: "running",
@@ -337,7 +337,7 @@ class DataStore {
       },
 
       {
-        id: "task_5",
+        id: "mission_5",
         name: "台八線 · 梨山 - 大禹嶺路段",
         description: "巡檢範圍：梨山（24.2541, 121.2529）至 大禹嶺（24.1863, 121.3267），全長約 49 公里",
         status: "running",
@@ -354,7 +354,7 @@ class DataStore {
       },
 
       {
-        id: "task_6",
+        id: "mission_6",
         name: "台八線 · 大禹嶺 - 關原路段",
         description: "巡檢範圍：大禹嶺（24.1863, 121.3267）至 關原（24.1874, 121.3324），全長約 2 公里",
         status: "running",
@@ -371,7 +371,7 @@ class DataStore {
       },
 
       {
-        id: "task_7",
+        id: "mission_7",
         name: "台八線 · 關原 - 天祥路段",
         description: "巡檢範圍：關原（24.1874, 121.3324）至 天祥（24.1706, 121.5475），全長約 25 公里",
         status: "running",
@@ -388,7 +388,7 @@ class DataStore {
       },
 
       {
-        id: "task_8",
+        id: "mission_8",
         name: "台八線 · 天祥 - 太魯閣路段",
         description: "巡檢範圍：天祥（24.1706, 121.5475）至 太魯閣（24.1639, 121.6063），全長約 7 公里",
         status: "paused",
@@ -405,7 +405,7 @@ class DataStore {
       },
 
       {
-        id: "task_9",
+        id: "mission_9",
         name: "台八線 · 太魯閣 - 新城路段",
         description: "巡檢範圍：太魯閣（24.1639, 121.6063）至 新城（24.1702, 120.9052），全長約 13 公里",
         status: "running",
@@ -422,14 +422,14 @@ class DataStore {
       },
     ]
 
-    tai8Tasks.forEach((t) => this.tasks.set(t.id, t))
+    tai8Missions.forEach((t) => this.missions.set(t.id, t))
 
     const alertPointById = new Map(tai8AlertPoints.map((point) => [point.id, point]))
 
-    this.tasks.forEach((task) => {
-      const alertPointIds = task.metrics?.alertPointIds ?? []
+    this.missions.forEach((mission) => {
+      const alertPointIds = mission.metrics?.alertPointIds ?? []
       if (alertPointIds.length === 0) return
-      const streamId = task.boundStreamIds[0]
+      const streamId = mission.boundStreamIds[0]
       if (!streamId) return
       alertPointIds.forEach((pointId) => {
         const point = alertPointById.get(pointId)
@@ -443,7 +443,7 @@ class DataStore {
 
         const alert: Alert = {
           id: alertId,
-          taskId: task.id,
+          missionId: mission.id,
           streamId,
           createdAt: new Date(Date.now() - Math.random() * 60 * 60 * 1000),
           severity,
@@ -462,7 +462,7 @@ class DataStore {
           snapshotUrl: `/placeholder.svg?height=180&width=320&query=${hazardType}+detection`,
           analysisRaw: { model: "mock-vlm-v1", confidence },
           status: "open",
-          notifications: task.notifyGroupIds.map((groupId) => ({
+          notifications: mission.notifyGroupIds.map((groupId) => ({
             groupId,
             sentAt: new Date(Date.now() - Math.random() * 60 * 60 * 1000),
             channel: "demo-notification",
@@ -674,53 +674,53 @@ class DataStore {
     return deleted
   }
 
-  // Task operations
-  getTasks(): Task[] {
-    return Array.from(this.tasks.values()).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+  // Mission operations
+  getMissions(): Mission[] {
+    return Array.from(this.missions.values()).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
   }
 
-  getTask(id: string): Task | undefined {
-    return this.tasks.get(id)
+  getMission(id: string): Mission | undefined {
+    return this.missions.get(id)
   }
 
-  createTask(task: Task): Task {
-    this.tasks.set(task.id, task)
-    this.emit("task.created", task)
-    return task
+  createMission(mission: Mission): Mission {
+    this.missions.set(mission.id, mission)
+    this.emit("mission.created", mission)
+    return mission
   }
 
-  updateTask(id: string, updates: Partial<Task>): Task | undefined {
-    const task = this.tasks.get(id)
-    if (!task) return undefined
+  updateMission(id: string, updates: Partial<Mission>): Mission | undefined {
+    const mission = this.missions.get(id)
+    if (!mission) return undefined
 
-    const updated = { ...task, ...updates }
-    this.tasks.set(id, updated)
-    this.emit("task.updated", updated)
+    const updated = { ...mission, ...updates }
+    this.missions.set(id, updated)
+    this.emit("mission.updated", updated)
     return updated
   }
 
-  deleteTask(id: string): boolean {
-    const deleted = this.tasks.delete(id)
-    if (deleted) this.emit("task.deleted", id)
+  deleteMission(id: string): boolean {
+    const deleted = this.missions.delete(id)
+    if (deleted) this.emit("mission.deleted", id)
     return deleted
   }
 
-  startTask(id: string): Task | undefined {
-    const task = this.tasks.get(id)
-    if (!task) return undefined
+  startMission(id: string): Mission | undefined {
+    const mission = this.missions.get(id)
+    if (!mission) return undefined
 
-    return this.updateTask(id, { status: "running", startAt: new Date() })
+    return this.updateMission(id, { status: "running", startAt: new Date() })
   }
 
-  stopTask(id: string): Task | undefined {
-    const task = this.tasks.get(id)
-    if (!task) return undefined
+  stopMission(id: string): Mission | undefined {
+    const mission = this.missions.get(id)
+    if (!mission) return undefined
 
-    return this.updateTask(id, { status: "ended", endAt: new Date() })
+    return this.updateMission(id, { status: "ended", endAt: new Date() })
   }
 
-  pauseTask(id: string): Task | undefined {
-    return this.updateTask(id, { status: "paused" })
+  pauseMission(id: string): Mission | undefined {
+    return this.updateMission(id, { status: "paused" })
   }
 
   // Alert operations
@@ -736,8 +736,8 @@ class DataStore {
     if (filters?.hazardType) {
       alerts = alerts.filter((a) => filters.hazardType.includes(a.hazardType))
     }
-    if (filters?.taskId) {
-      alerts = alerts.filter((a) => a.taskId === filters.taskId)
+    if (filters?.missionId) {
+      alerts = alerts.filter((a) => a.missionId === filters.missionId)
     }
     if (filters?.streamId) {
       alerts = alerts.filter((a) => a.streamId === filters.streamId)
@@ -753,13 +753,13 @@ class DataStore {
   createAlert(alert: Alert): Alert {
     this.alerts.set(alert.id, alert)
 
-    // Update task metrics
-    const task = this.tasks.get(alert.taskId)
-    if (task) {
-      const metrics = { ...task.metrics }
+    // Update mission metrics
+    const mission = this.missions.get(alert.missionId)
+    if (mission) {
+      const metrics = { ...mission.metrics }
       metrics.alertCountTotal++
       metrics.lastAlertAt = alert.createdAt
-      this.updateTask(task.id, { metrics })
+      this.updateMission(mission.id, { metrics })
     }
 
     this.emit("alert.created", alert)

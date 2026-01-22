@@ -64,10 +64,10 @@ export interface NotificationGroup {
   createdAt: Date
 }
 
-// Task types
-export type TaskStatus = "idle" | "running" | "ended" | "paused"
+// Mission types
+export type MissionStatus = "idle" | "running" | "ended" | "paused"
 
-export interface TaskMetrics {
+export interface MissionMetrics {
   alertCountTotal: number
   lastAlertAt?: Date
   alertPointIds?: string[]
@@ -79,18 +79,18 @@ export interface HistoryStream {
   endAt?: Date
 }
 
-export interface Task {
+export interface Mission {
   id: string
   name: string
   description?: string
-  status: TaskStatus
+  status: MissionStatus
   startAt?: Date
   endAt?: Date
   createdBy: string
   createdAt: Date
   boundStreamIds: string[]
   notifyGroupIds: string[]
-  metrics: TaskMetrics
+  metrics: MissionMetrics
   currentTelemetry?: StreamTelemetry
 }
 
@@ -117,7 +117,7 @@ export interface AlertNotification {
 
 export interface Alert {
   id: string
-  taskId: string
+  missionId: string
   streamId: string
   createdAt: Date
   severity: AlertSeverity
@@ -176,6 +176,6 @@ export interface AlertFilters {
   status?: AlertStatus[]
   severity?: AlertSeverity[]
   hazardType?: HazardType[]
-  taskId?: string
+  missionId?: string
   streamId?: string
 }
