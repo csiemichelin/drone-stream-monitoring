@@ -131,11 +131,14 @@ export function TopNav({ userName }: { userName: string }) {
         <div className="flex items-center gap-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className={cn("relative", shakeBell && "alert-shake")}>
-                <Megaphone className="h-5 w-5" />
+              <Button variant="ghost" size="icon" className="relative">
+                <Megaphone className={cn("h-5 w-5 inline-block", shakeBell && "alert-shake-icon")} />
                 {badgeCount > 0 && (
                   <Badge
-                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                    className={cn(
+                      "absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs",
+                      shakeBell && "alert-shake-badge",
+                    )}
                     variant="destructive"
                   >
                     {badgeCount > 10 ? "10+" : badgeCount}
