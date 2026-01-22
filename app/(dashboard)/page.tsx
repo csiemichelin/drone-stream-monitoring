@@ -79,7 +79,7 @@ export default function OverviewPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base font-medium text-foreground/75">當前 Mission</CardTitle>
+            <CardTitle className="text-base font-medium text-foreground/75">當前任務</CardTitle>
             <span className="h-9 w-9 rounded-full bg-primary/20 text-primary grid place-items-center shadow-sm">
               <ListTodo className="h-5 w-5" />
             </span>
@@ -87,7 +87,7 @@ export default function OverviewPage() {
           <CardContent className="pb-2">
             <div className="text-3xl font-bold text-primary">{runningMissions}</div>
             <div className="mt-1 flex items-center justify-between gap-3">
-              <p className="text-xs text-foreground/60">筆巡檢 Mission 執行中</p>
+              <p className="text-xs text-foreground/60">筆巡檢任務 執行中</p>
               <Link
                 href="/missions"
                 className="group inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-primary"
@@ -171,8 +171,8 @@ export default function OverviewPage() {
         <div className="lg:col-span-1 flex flex-col space-y-4">
           <Card className="flex-1 flex flex-col">
             <CardHeader>
-              <CardTitle className="text-base font-medium text-foreground/75">巡檢 Mission</CardTitle>
-              <CardDescription className="text-xs text-foreground/60">Mission 執行中</CardDescription>
+              <CardTitle className="text-base font-medium text-foreground/75">巡檢任務</CardTitle>
+              <CardDescription className="text-xs text-foreground/60">任務執行中</CardDescription>
             </CardHeader>
 
             <CardContent className="flex-1 flex flex-col min-h-0">
