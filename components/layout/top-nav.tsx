@@ -48,16 +48,7 @@ export function TopNav({ userName }: { userName: string }) {
   const [badgeCount, setBadgeCount] = useState(0)
   const [shakeBell, setShakeBell] = useState(false)
   const shakeTimeoutRef = useRef<number | null>(null)
-
-  useEffect(() => {
-    fetch("/api/alerts?status=open&limit=10")
-      .then((res) => res.json())
-      .then((data) => {
-        const nextAlerts = (data.alerts || []) as AlertMenuItem[]
-        setAlerts(nextAlerts.slice(0, 10))
-      })
-      .catch(() => setAlerts([]))
-  }, [])
+  const hasNewAlerts = badgeCount > 0
 
   useEffect(() => {
     const handleToastAlert = (event: Event) => {
@@ -149,7 +140,7 @@ export function TopNav({ userName }: { userName: string }) {
             <DropdownMenuContent align="end" className="w-80">
               <DropdownMenuLabel>Recent Alerts</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {alerts.length === 0 ? (
+              {!hasNewAlerts ? (
                 <div className="p-3 text-sm text-muted-foreground text-center">No new alerts</div>
               ) : (
                 <div className="max-h-112 overflow-y-auto">
